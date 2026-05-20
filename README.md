@@ -11,6 +11,7 @@ Modelagem, simulação e visualização de trajetórias de aeronaves eVTOL duran
 - [Taipy](https://taipy.io/) — interface gráfica e navegação
 - [Matplotlib](https://matplotlib.org/) — visualização de trajetórias
 - [Docker](https://www.docker.com/) — containerização
+- [BlueSky](https://github.com/TUDelft-CNS-ATM/bluesky) — motor de simulação de tráfego aéreo (componente externo)
 
 ## Como executar localmente
 
@@ -49,4 +50,12 @@ app-trajetoria/
 
 ## Licença
 
-MIT — veja [LICENSE](LICENSE)
+Este aplicativo é distribuído sob a licença **MIT** — veja [LICENSE](LICENSE).
+
+### Motor de simulação
+
+As trajetórias exibidas neste aplicativo são geradas pelo **BlueSky ATC Simulator**, desenvolvido pela TU Delft e distribuído sob a licença **GNU GPL v3**.
+
+> Hoekstra, J. M. e Ellerbroek, J. "BlueSky ATC Simulator Project: an Open Data and Open Source Approach". *Proceedings of the 7th ICRAT*, 2016.
+
+O BlueSky é utilizado como ferramenta externa de simulação — seu código não é incorporado a este aplicativo. Os dados de saída (trajetórias em CSV e cenários `.scn`) são consumidos pela interface Taipy como arquivos independentes. As licenças dos dois componentes são, portanto, compatíveis nesta arquitetura.
