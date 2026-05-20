@@ -474,61 +474,90 @@ function parseStatelog(text) {
     const raw = line.trim();
     if (!raw || raw.startsWith('#')) continue;
     const c = raw.split(delim);
-    // pula linha de cabeçalho sem # (primeiro campo não-numérico)
+    // pula linha de cabeçalho sem # (primeiro campo não-numérico e não HH:MM)
     if (isNaN(parseFloat(c[0])) && !c[0].trim().match(/^\d+[:.]/)) continue;
     const alt_ft  = parseFloat(c[idxAlt]);
     const dist_nm = parseFloat(c[idxDist]);
     if (isNaN(alt_ft) || isNaN(dist_nm)) continue;
+    // Guardar unidades brutas do BlueSky: nm, ft, kt — conversão feita no render
     rows.push({
-      id:   idxId  >= 0 ? c[idxId].trim()     : '',
-      dist: +(dist_nm * 1852).toFixed(1),   // nm → m
-      alt:  +(alt_ft  * 0.3048).toFixed(3), // ft → m
-      cas:  idxCas >= 0 ? parseFloat(c[idxCas]) : null,
-      tas:  idxTas >= 0 ? parseFloat(c[idxTas]) : null,
+      id:      idxId  >= 0 ? c[idxId].trim() : '',
+      dist_nm: dist_nm,                                  // nm acumulados desde a origem
+      alt_ft:  alt_ft,                                   // ft MSL
+      cas:     idxCas >= 0 ? parseFloat(c[idxCas]) : null, // kt
+      tas:     idxTas >= 0 ? parseFloat(c[idxTas]) : null, // kt
     });
   }
   if (!rows.length) throw new Error('Nenhuma linha de dados numéricos encontrada.');
   return rows;
 }
 
-function nominalAgl(dist_m, rampPts) {
-  const pts = toAgl(rampPts);
-  if (dist_m <= pts[0].x) return pts[0].y;
-  if (dist_m >= pts[pts.length-1].x) return pts[pts.length-1].y;
+/* Interpola altitude MSL (m) na rampa nominal a partir da distância ao TLOF (m) */
+function nominalAlt(dist_tlof_m) {
+  const pts = EASA_0; // usa EASA como referência padrão
+  if (dist_tlof_m <= pts[0].dist) return pts[0].alt;
+  if (dist_tlof_m >= pts[pts.length-1].dist) return pts[pts.length-1].alt;
   for (let i = 0; i < pts.length - 1; i++) {
-    if (dist_m >= pts[i].x && dist_m <= pts[i+1].x) {
-      const t = (dist_m - pts[i].x) / (pts[i+1].x - pts[i].x);
-      return +(pts[i].y + t * (pts[i+1].y - pts[i].y)).toFixed(3);
+    if (dist_tlof_m >= pts[i].dist && dist_tlof_m <= pts[i+1].dist) {
+      const t = (dist_tlof_m - pts[i].dist) / (pts[i+1].dist - pts[i].dist);
+      return +(pts[i].alt + t * (pts[i+1].alt - pts[i].alt)).toFixed(3);
     }
   }
-  return null;
+  return pts[pts.length-1].alt;
 }
 
 function renderStatelog(rows) {
   Object.values(charts).forEach(c => c && c.destroy());
 
-  // Altitude MSL (igual ao Python) para o perfil; AGL apenas para e_z
-  const simMsl  = rows.map(r => ({x: r.dist, y: r.alt}));
-  const nomMsl  = EASA_0.map(p => ({x: p.dist, y: p.alt}));
-  const ezData  = rows.map(r => ({
-    x: r.dist,
-    y: +(r.alt - (nominalAgl(r.dist, EASA_0) + TLOF_ALT_M)).toFixed(3)
-  }));
-  const casData = rows.filter(r => r.cas !== null).map(r => ({x: r.dist, y: r.cas}));
-  const tasData = rows.filter(r => r.tas !== null).map(r => ({x: r.dist, y: r.tas}));
+  /* ── Transformação de unidades BlueSky ──────────────────────────────────
+     traf.distflown: nm acumulados desde a origem (SBGR → SJC ≈ 108 nm)
+     dist_tlof = (max_dist_nm − dist_nm) × 1852
+       → 0 m no toque no TLOF, aumenta voltando pela rampa de aproximação
+     traf.alt: pés MSL  →  alt_m = alt_ft × 0.3048
+  ─────────────────────────────────────────────────────────────────────── */
+  const maxDistNm = Math.max(...rows.map(r => r.dist_nm));
 
+  const enriched = rows.map(r => ({
+    dist_tlof: +((maxDistNm - r.dist_nm) * 1852).toFixed(1), // m do TLOF
+    alt_m:     +(r.alt_ft * 0.3048).toFixed(3),               // m MSL
+    cas:       r.cas,
+    tas:       r.tas,
+    dist_nm:   r.dist_nm,
+  }));
+
+  // Segmento de aproximação: dist_tlof ≤ 1 500 m (cobre rampa EASA 1010 m)
+  const RAMP_WINDOW = 1500;
+  const approach = enriched
+    .filter(r => r.dist_tlof <= RAMP_WINDOW)
+    .sort((a, b) => a.dist_tlof - b.dist_tlof);
+
+  const simData = approach.map(r => ({x: r.dist_tlof, y: r.alt_m}));
+  const nomData = EASA_0.map(p => ({x: p.dist, y: p.alt}));
+
+  const ezData = approach.map(r => ({
+    x: r.dist_tlof,
+    y: +(r.alt_m - nominalAlt(r.dist_tlof)).toFixed(3)
+  }));
+
+  // Velocidade: voo completo ordenado por tempo (dist_nm crescente)
+  const fullFlight = [...enriched].sort((a, b) => a.dist_nm - b.dist_nm);
+  const casData = fullFlight.filter(r => r.cas !== null)
+    .map(r => ({x: +(r.dist_nm * 1.852).toFixed(2), y: r.cas}));
+  const tasData = fullFlight.filter(r => r.tas !== null)
+    .map(r => ({x: +(r.dist_nm * 1.852).toFixed(2), y: r.tas}));
+
+  const approachOpts = (yLabel) => ({
+    ...baseOpts,
+    scales: {
+      x: { type:'linear', title:{ ...AXIS_TITLE, text:'Distância ao TLOF (m)' }, grid: GRID_STYLE, border:{ display:false } },
+      y: { title:{ ...AXIS_TITLE, text: yLabel }, grid: GRID_STYLE, border:{ display:false } }
+    }
+  });
   const speedOpts = {
     ...baseOpts,
     scales: {
-      x: { type:'linear', title:{ ...AXIS_TITLE, text:'Distância ao TLOF (m)' }, grid: GRID_STYLE, border:{ display:false } },
-      y: { title:{ ...AXIS_TITLE, text:'Velocidade (kt)'  }, grid: GRID_STYLE, border:{ display:false } }
-    }
-  };
-  const ezOpts = {
-    ...baseOpts,
-    scales: {
-      x: { type:'linear', title:{ ...AXIS_TITLE, text:'Distância ao TLOF (m)' }, grid: GRID_STYLE, border:{ display:false } },
-      y: { title:{ ...AXIS_TITLE, text:'e_z = simulado − nominal (m)' }, grid: GRID_STYLE, border:{ display:false } }
+      x: { type:'linear', title:{ ...AXIS_TITLE, text:'Distância percorrida (km)' }, grid: GRID_STYLE, border:{ display:false } },
+      y: { title:{ ...AXIS_TITLE, text:'Velocidade (kt)' }, grid: GRID_STYLE, border:{ display:false } }
     }
   };
 
@@ -536,11 +565,11 @@ function renderStatelog(rows) {
     type: 'line',
     data: {
       datasets: [
-        { label: 'Simulado (BlueSky)', data: simMsl, borderColor: '#6baed6', borderWidth: 2, pointRadius: 0, fill: false, tension: 0 },
-        { label: 'Nominal EASA',       data: nomMsl, borderColor: '#9ecae1', borderDash:[5,4], borderWidth:1.5, pointRadius:0, fill:false, tension:0 }
+        { label: 'Simulado (BlueSky)', data: simData, borderColor: '#6baed6', borderWidth: 2, pointRadius: 0, fill: false, tension: 0 },
+        { label: 'Nominal EASA',       data: nomData, borderColor: '#9ecae1', borderDash:[5,4], borderWidth:1.5, pointRadius:0, fill:false, tension:0 }
       ]
     },
-    options: baseOpts
+    options: approachOpts('Altitude (m)')
   });
 
   charts.speed = new Chart(document.getElementById('chart-statelog-speed'), {
@@ -564,7 +593,7 @@ function renderStatelog(rows) {
         borderWidth: 1.8, pointRadius: 0, fill: true, tension: 0
       }]
     },
-    options: ezOpts
+    options: approachOpts('e_z = simulado − nominal (m)')
   });
 
   document.getElementById('statelog-charts').style.display = 'block';
