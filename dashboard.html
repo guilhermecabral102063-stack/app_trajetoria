@@ -479,13 +479,13 @@ function parseStatelog(text) {
     const alt_ft  = parseFloat(c[idxAlt]);
     const dist_nm = parseFloat(c[idxDist]);
     if (isNaN(alt_ft) || isNaN(dist_nm)) continue;
-    // Guardar unidades brutas do BlueSky: nm, ft, kt — conversão feita no render
+    // Guardar unidades brutas do BlueSky: distflown em metros, alt em pés, vel em kt
     rows.push({
-      id:      idxId  >= 0 ? c[idxId].trim() : '',
-      dist_nm: dist_nm,                                  // nm acumulados desde a origem
-      alt_ft:  alt_ft,                                   // ft MSL
-      cas:     idxCas >= 0 ? parseFloat(c[idxCas]) : null, // kt
-      tas:     idxTas >= 0 ? parseFloat(c[idxTas]) : null, // kt
+      id:     idxId  >= 0 ? c[idxId].trim() : '',
+      dist_m: dist_nm,                                      // metros acumulados desde a origem
+      alt_ft: alt_ft,                                       // pés MSL
+      cas:    idxCas >= 0 ? parseFloat(c[idxCas]) : null,  // kt
+      tas:    idxTas >= 0 ? parseFloat(c[idxTas]) : null,  // kt
     });
   }
   if (!rows.length) throw new Error('Nenhuma linha de dados numéricos encontrada.');
@@ -515,14 +515,16 @@ function renderStatelog(rows) {
        → 0 m no toque no TLOF, aumenta voltando pela rampa de aproximação
      traf.alt: pés MSL  →  alt_m = alt_ft × 0.3048
   ─────────────────────────────────────────────────────────────────────── */
-  const maxDistNm = rows.reduce((m, r) => r.dist_nm > m ? r.dist_nm : m, rows[0].dist_nm);
+  // traf.distflown = metros acumulados desde a origem
+  // dist_tlof = maxDist_m − dist_m  →  0 m no TLOF, aumenta voltando pela rampa
+  const maxDist_m = rows.reduce((m, r) => r.dist_m > m ? r.dist_m : m, rows[0].dist_m);
 
   const enriched = rows.map(r => ({
-    dist_tlof: +((maxDistNm - r.dist_nm) * 1852).toFixed(1), // m do TLOF
-    alt_m:     +(r.alt_ft * 0.3048).toFixed(3),               // m MSL
+    dist_tlof: +(maxDist_m - r.dist_m).toFixed(1), // m do TLOF (sem conversão adicional)
+    alt_m:     +(r.alt_ft * 0.3048).toFixed(3),     // pés → metros MSL
     cas:       r.cas,
     tas:       r.tas,
-    dist_nm:   r.dist_nm,
+    dist_m:    r.dist_m,
   }));
 
   // Segmento de aproximação: dist_tlof ≤ 1 500 m (cobre rampa EASA 1010 m)
@@ -539,12 +541,12 @@ function renderStatelog(rows) {
     y: +(r.alt_m - nominalAlt(r.dist_tlof)).toFixed(3)
   }));
 
-  // Velocidade: voo completo ordenado por tempo (dist_nm crescente)
-  const fullFlight = [...enriched].sort((a, b) => a.dist_nm - b.dist_nm);
+  // Velocidade: voo completo ordenado por dist_m crescente (= ordem temporal)
+  const fullFlight = [...enriched].sort((a, b) => a.dist_m - b.dist_m);
   const casData = fullFlight.filter(r => r.cas !== null)
-    .map(r => ({x: +(r.dist_nm * 1.852).toFixed(2), y: r.cas}));
+    .map(r => ({x: +(r.dist_m / 1000).toFixed(2), y: r.cas}));  // m → km
   const tasData = fullFlight.filter(r => r.tas !== null)
-    .map(r => ({x: +(r.dist_nm * 1.852).toFixed(2), y: r.tas}));
+    .map(r => ({x: +(r.dist_m / 1000).toFixed(2), y: r.tas}));
 
   const approachOpts = (yLabel) => ({
     ...baseOpts,
