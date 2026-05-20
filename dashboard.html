@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>App Trajetória — Gêmeo Digital Vertiporto SJC</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: #f4f6f9; color: #222; }
+
+  /* HEADER */
+  .header {
+    background: linear-gradient(135deg, #1a3a5c 0%, #2166ac 100%);
+    color: white; padding: 28px 40px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .header h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: 0.3px; }
+  .header p { font-size: 0.85rem; opacity: 0.85; margin-top: 4px; }
+  .badge {
+    background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 20px; padding: 6px 16px; font-size: 0.78rem; font-weight: 600;
+  }
+
+  /* LAYOUT */
+  .container { max-width: 1280px; margin: 0 auto; padding: 28px 24px; }
+
+  /* STATUS CARDS */
+  .cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
+  .card {
+    background: white; border-radius: 10px; padding: 20px 22px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08); border-left: 4px solid #9ecae1;
+  }
+  .card.ok   { border-left-color: #2ca02c; }
+  .card.warn { border-left-color: #ff7f0e; }
+  .card.block{ border-left-color: #d62728; }
+  .card.info { border-left-color: #9ecae1; }
+  .card .label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.6px; color: #666; }
+  .card .value { font-size: 1.6rem; font-weight: 700; margin: 6px 0 2px; color: #1a3a5c; }
+  .card .sub { font-size: 0.78rem; color: #888; }
+
+  /* SECTION */
+  .section { background: white; border-radius: 10px; padding: 26px 28px; margin-bottom: 22px; box-shadow: 0 1px 4px rgba(0,0,0,0.07); }
+  .section h2 { font-size: 1.05rem; font-weight: 700; color: #1a3a5c; margin-bottom: 4px; }
+  .section .subtitle { font-size: 0.8rem; color: #888; margin-bottom: 18px; }
+  .divider { border: none; border-top: 1px solid #eee; margin: 18px 0; }
+
+  /* GRID 2 cols */
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+
+  /* CHART */
+  .chart-wrap { position: relative; height: 320px; }
+
+  /* TABLES */
+  table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+  thead th { background: #eef4fb; color: #1a3a5c; font-weight: 700; padding: 9px 12px; text-align: left; border-bottom: 2px solid #9ecae1; }
+  tbody td { padding: 8px 12px; border-bottom: 1px solid #f0f0f0; }
+  tbody tr:hover { background: #f8fbff; }
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 0.72rem; font-weight: 600; }
+  .tag.ok    { background: #d4edda; color: #155724; }
+  .tag.warn  { background: #fff3cd; color: #856404; }
+  .tag.block { background: #f8d7da; color: #721c24; }
+  .tag.pend  { background: #e2e3e5; color: #383d41; }
+
+  /* AGENTS */
+  .agents { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 22px; }
+  .agent-card { background: white; border-radius: 10px; padding: 18px; box-shadow: 0 1px 4px rgba(0,0,0,0.07); }
+  .agent-card .agent-name { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #9ecae1; }
+  .agent-card h3 { font-size: 0.9rem; font-weight: 700; color: #1a3a5c; margin: 4px 0 10px; }
+  .agent-card p { font-size: 0.78rem; color: #555; line-height: 1.55; }
+  .agent-card .finding { margin-top: 10px; padding: 8px 10px; background: #eef4fb; border-radius: 6px; font-size: 0.76rem; color: #1a3a5c; font-weight: 600; }
+
+  /* KEY FINDING */
+  .alert { padding: 14px 18px; border-radius: 8px; margin-bottom: 16px; font-size: 0.83rem; }
+  .alert.critical { background: #f8d7da; border-left: 4px solid #d62728; color: #721c24; }
+  .alert.warning  { background: #fff3cd; border-left: 4px solid #ff7f0e; color: #856404; }
+  .alert.info     { background: #eef4fb; border-left: 4px solid #9ecae1; color: #1a3a5c; }
+  .alert strong   { display: block; margin-bottom: 3px; }
+
+  /* NEXT STEPS */
+  .steps { list-style: none; }
+  .steps li { display: flex; gap: 12px; align-items: flex-start; padding: 10px 0; border-bottom: 1px solid #f0f0f0; font-size: 0.83rem; }
+  .steps li:last-child { border-bottom: none; }
+  .step-num { min-width: 26px; height: 26px; background: #2166ac; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.72rem; font-weight: 700; }
+  .step-num.done { background: #2ca02c; }
+  .step-num.block { background: #d62728; }
+
+  /* FOOTER */
+  .footer { text-align: center; font-size: 0.75rem; color: #aaa; padding: 24px 0; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div>
+    <h1>App Trajetória — Gêmeo Digital Vertiporto SJC</h1>
+    <p>Sandbox Regulatório de Vertiporto · ITA / VertiMob · SBSJ (São José dos Campos)</p>
+  </div>
+  <div>
+    <div class="badge">Tarefa 6 · v0.1 Preliminar · 20 mai 2026</div>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- STATUS CARDS -->
+  <div class="cards">
+    <div class="card info">
+      <div class="label">Cenários BlueSky</div>
+      <div class="value">12</div>
+      <div class="sub">8 regulatórios + 4 legados</div>
+    </div>
+    <div class="card ok">
+      <div class="label">Rampas nominais</div>
+      <div class="value">4</div>
+      <div class="sub">EASA R1/R2 · FAA P1/P2</div>
+    </div>
+    <div class="card block">
+      <div class="label">Logs de simulação</div>
+      <div class="value">0</div>
+      <div class="sub">BlueSky nunca executado</div>
+    </div>
+    <div class="card warn">
+      <div class="label">Monte Carlo</div>
+      <div class="value">0</div>
+      <div class="sub">Aguardando logs BlueSky</div>
+    </div>
+  </div>
+
+  <!-- AGENTS -->
+  <div class="agents">
+    <div class="agent-card">
+      <div class="agent-name">especialista-trajetória</div>
+      <h3>Análise de Cenários</h3>
+      <p>Inventário de 12 cenários .scn, perfis nominais EASA vs. FAA, contrato de dados para Monte Carlo.</p>
+      <div class="finding">Gradiente idêntico: 12,50% (7,125°) em ambas as normas</div>
+    </div>
+    <div class="agent-card">
+      <div class="agent-name">statistician</div>
+      <h3>Análise Estatística</h3>
+      <p>EDA dos CSVs com Python. R² = 1,000 — trajetórias nominais perfeitamente determinísticas.</p>
+      <div class="finding">e_y estrutural FAA: 82,1 m (curvatura da rota)</div>
+    </div>
+    <div class="agent-card">
+      <div class="agent-name">technical_writer</div>
+      <h3>Relatório Técnico</h3>
+      <p>Consolidação em português rigoroso. 7 tabelas numeradas, todas referenciadas no texto.</p>
+      <div class="finding">relatorio_tarefa6_preliminar.md — versão 0.1</div>
+    </div>
+    <div class="agent-card">
+      <div class="agent-name">dashboard_engineer</div>
+      <h3>Interface Taipy</h3>
+      <p>index.html, página trajetorias.py, gráficos Matplotlib azul pastel, navegação implementada.</p>
+      <div class="finding">Figuras 1 e 2 com chamadas no texto — padrão ABNT</div>
+    </div>
+  </div>
+
+  <!-- GRÁFICOS -->
+  <div class="section">
+    <h2>Figura 1 — Perfil de Rampa de Aproximação: EASA Subpart 2 vs. FAA EB-105A</h2>
+    <div class="subtitle">Altitude AGL (m) em função da distância ao TLOF/FATO. Trecho ativo apenas (excluindo zonas de transição). Dados: CSVs reais do projeto.</div>
+    <div class="grid2">
+      <div>
+        <div style="font-size:0.78rem;font-weight:700;color:#555;margin-bottom:8px">Orientação 0° (R1 / P1)</div>
+        <div class="chart-wrap"><canvas id="chart0"></canvas></div>
+      </div>
+      <div>
+        <div style="font-size:0.78rem;font-weight:700;color:#555;margin-bottom:8px">Orientação 180° (R2 / P2)</div>
+        <div class="chart-wrap"><canvas id="chart180"></canvas></div>
+      </div>
+    </div>
+    <div style="font-size:0.76rem;color:#888;margin-top:12px">
+      Conforme apresentado na Figura 1, ambas as normas adotam gradiente de descida idêntico (12,50%), diferindo apenas na extensão horizontal (EASA: 1.010 m · FAA: 602,8 m) e no delta de altitude (EASA: 152,0 m AGL · FAA: 73,5 m AGL).
+    </div>
+  </div>
+
+  <!-- TABELAS COMPARATIVAS -->
+  <div class="grid2">
+
+    <div class="section">
+      <h2>Tabela 1 — Parâmetros Geométricos das Rampas Nominais</h2>
+      <div class="subtitle">Trecho ativo · Dados calculados por regressão linear (scipy.stats.linregress)</div>
+      <table>
+        <thead><tr><th>Dimensão</th><th>EASA Subpart 2</th><th>FAA EB-105A</th></tr></thead>
+        <tbody>
+          <tr><td>Extensão horizontal</td><td>1.010,0 m</td><td>602,848 m</td></tr>
+          <tr><td>Trecho ativo</td><td>970,0 m</td><td>586,6 m</td></tr>
+          <tr><td>Delta altitude</td><td>152,000 m (498,7 ft)</td><td>73,456 m (240,9 ft)</td></tr>
+          <tr><td>Altitude de entrada</td><td>791,541 m MSL</td><td>712,997 m MSL</td></tr>
+          <tr><td>Gradiente de descida</td><td>12,50% · 7,125°</td><td>12,50% · 7,125°</td></tr>
+          <tr><td>R² da regressão</td><td>1,000000</td><td>1,000000</td></tr>
+          <tr><td>Resíduo máximo</td><td>0,000 m</td><td>0,0005 m</td></tr>
+          <tr><td>Curvatura horizontal</td><td>Reta (planar)</td><td>Curva (Path Curved)</td></tr>
+          <tr><td>e_y estrutural máx.</td><td>0,000 m</td><td><strong>82,1 m</strong></td></tr>
+          <tr><td>Razão EASA/FAA</td><td colspan="2" style="text-align:center">Extensão: 1,675× · Delta-alt: 2,069×</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <h2>Tabela 2 — Estatísticas Descritivas (Altitude MSL)</h2>
+      <div class="subtitle">Variável alt_m · Subconjunto centerline · Calculado em Python com dados reais</div>
+      <table>
+        <thead><tr><th>Rampa</th><th>n</th><th>Média (m)</th><th>σ (m)</th><th>Min (m)</th><th>Max (m)</th></tr></thead>
+        <tbody>
+          <tr><td>EASA R1 (0°)</td><td>974</td><td>730,697</td><td>35,232</td><td>639,541</td><td>791,541</td></tr>
+          <tr><td>EASA R2 (180°)</td><td>974</td><td>730,697</td><td>35,232</td><td>639,541</td><td>791,541</td></tr>
+          <tr><td>FAA P1 (0°)</td><td>590</td><td>676,205</td><td>21,295</td><td>639,541</td><td>712,997</td></tr>
+          <tr><td>FAA P2 (180°)</td><td>590</td><td>676,205</td><td>21,295</td><td>639,541</td><td>712,997</td></tr>
+        </tbody>
+      </table>
+
+      <hr class="divider">
+
+      <h2>Tabela 3 — Dimensionamento Amostral Monte Carlo</h2>
+      <div class="subtitle">Bootstrap IC 95% · Distribuição assumida normal</div>
+      <table>
+        <thead><tr><th>Quantil</th><th>Erro máx.</th><th>N mín./cenário</th></tr></thead>
+        <tbody>
+          <tr><td>P95</td><td>10%</td><td>1.715</td></tr>
+          <tr><td>P99</td><td>10%</td><td>5.354</td></tr>
+          <tr><td>P95</td><td>5%</td><td>6.859</td></tr>
+        </tbody>
+      </table>
+      <div style="font-size:0.74rem;color:#888;margin-top:8px">N total estimado (produção, N=1.000): 48.000 simulações · 8 cenários × 6 cond. met. × 1.000</div>
+    </div>
+
+  </div>
+
+  <!-- ALERTAS -->
+  <div class="section">
+    <h2>Achados Críticos dos Agentes</h2>
+    <div class="subtitle">Pontos técnicos que exigem atenção antes da próxima etapa</div>
+
+    <div class="alert critical">
+      <strong>BLOQUEADOR CRÍTICO — Logs de simulação ausentes</strong>
+      Os 8 cenários BlueSky estão completamente especificados em disco, mas nunca foram executados no simulador. Toda análise de desvios (e_y, e_z) e o Monte Carlo dependem da captura dos logs STATELOG. Próxima ação imediata: instalar BlueSky e executar os cenários nominais.
+    </div>
+
+    <div class="alert warning">
+      <strong>e_y estrutural FAA de 82,1 m — decomposição obrigatória</strong>
+      A curvatura horizontal da rota FAA "Path Curved" gera desvio lateral determinístico de até 82,1 m (P95: 81,7 m · Média: 48,1 m). Esse componente é geométrico, não estocástico. Antes de ajustar qualquer distribuição para a rota FAA, o statistician deve calcular e_y_stoch = e_y − e_y_struct ponto a ponto. A omissão resultaria em distribuições que refletem a geometria da rota, não a dispersão real.
+    </div>
+
+    <div class="alert warning">
+      <strong>N = 1.000/cenário insuficiente para P99</strong>
+      O plano inicial de 1.000 simulações/cenário é adequado para P95 (erro ~10%), mas subestima P99 (exigiria N ≥ 5.354). O relatório final deve declarar esse caveat explicitamente.
+    </div>
+
+    <div class="alert info">
+      <strong>Trajetórias nominais perfeitamente determinísticas — R² = 1,000000</strong>
+      Não há variância para modelar nos CSVs: a trajetória nominal é uma reta perfeita no trecho ativo (resíduo máximo 0,5 mm, atribuível a arredondamento). O problema estatístico se materializa exclusivamente após a execução das simulações BlueSky com perturbações atmosféricas.
+    </div>
+  </div>
+
+  <!-- STATUS ATIVIDADES -->
+  <div class="section">
+    <h2>Status das Atividades — Plano do Professor</h2>
+    <div class="subtitle">Avaliação etapa por etapa das 11 atividades solicitadas na reunião</div>
+    <table>
+      <thead><tr><th>#</th><th>Atividade</th><th>Status</th><th>Observação</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>Padronização do repositório GitHub</td><td><span class="tag ok">✅ Concluída</span></td><td>github.com/…/app_trajetoria · branch main · público</td></tr>
+        <tr><td>2</td><td>Estrutura inicial do aplicativo</td><td><span class="tag ok">✅ Concluída</span></td><td>home.py · trajetorias.py · index.html · main.py</td></tr>
+        <tr><td>3</td><td>Utilização do Taipy</td><td><span class="tag warn">⚠️ Código pronto</span></td><td>Implementado — Taipy não instalado/testado localmente</td></tr>
+        <tr><td>4</td><td>Containerização com Docker</td><td><span class="tag warn">⚠️ Dockerfile pronto</span></td><td>Docker Desktop não instalado — build não executado</td></tr>
+        <tr><td>5</td><td>Integração com GitHub (push/pull)</td><td><span class="tag ok">✅ Concluída</span></td><td>4 commits · repositório sincronizado</td></tr>
+        <tr><td>6</td><td>Treinamento GitHub (Filipe)</td><td><span class="tag pend">— Filipe</span></td><td>Não é responsabilidade desta conta</td></tr>
+        <tr><td>7</td><td>Organização dos agentes de IA</td><td><span class="tag ok">✅ Concluída</span></td><td>especialista-trajetoria.md criado e publicado</td></tr>
+        <tr><td>8</td><td>Padronização visual dos gráficos</td><td><span class="tag ok">✅ Concluída</span></td><td>Matplotlib · #9ecae1/#3182bd · PDF vetorial</td></tr>
+        <tr><td>9</td><td>Organização das figuras e tabelas</td><td><span class="tag ok">✅ Concluída</span></td><td>Figuras 1-2 numeradas · chamadas no texto</td></tr>
+        <tr><td>10</td><td>Licenciamento</td><td><span class="tag ok">✅ Concluída</span></td><td>MIT (app) · GPL v3 BlueSky documentado no README</td></tr>
+        <tr><td>11</td><td>Objetivo final — Gêmeo Digital</td><td><span class="tag warn">🔄 Em andamento</span></td><td>Módulo estruturado · análise Tarefa 6 produzida · BlueSky pendente</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- PRÓXIMOS PASSOS -->
+  <div class="section">
+    <h2>Próximas Ações — Prioridade</h2>
+    <div class="subtitle">Lista ordenada do mais urgente ao menos urgente</div>
+    <ol class="steps">
+      <li><div class="step-num block">1</div><div><strong>Instalar Docker Desktop</strong> — permite containerizar e compartilhar o app com o professor e a equipe.</div></li>
+      <li><div class="step-num block">2</div><div><strong>Instalar Taipy e testar o app localmente</strong> — pip install -r requirements.txt · python app/main.py · validar na porta 5000.</div></li>
+      <li><div class="step-num block">3</div><div><strong>Verificar tipo "EVTOL" no BlueSky</strong> — confirmar parâmetros BADA-H carregados antes de executar qualquer cenário.</div></li>
+      <li><div class="step-num block">4</div><div><strong>Executar os 8 cenários nominais no BlueSky</strong> — capturar primeiros logs STATELOG. Destrava toda a Tarefa 6.</div></li>
+      <li><div class="step-num">5</div><div><strong>Extrair dados METAR históricos do SBSJ</strong> — mínimo 5 anos · definir envelopes DJF/JJA/MAM/SON via ADR.</div></li>
+      <li><div class="step-num">6</div><div><strong>Escrever script run_montecarlo.py</strong> — execução em lote com perturbações atmosféricas · consolidação em parquet.</div></li>
+      <li><div class="step-num">7</div><div><strong>Calcular e_y e e_z</strong> — com decomposição e_y_struct/e_y_stoch para rota FAA · entregar parquet ao statistician.</div></li>
+      <li><div class="step-num">8</div><div><strong>Ajuste de distribuições e envelopes probabilísticos</strong> — statistician · KS/AD · AIC/BIC · relatório técnico final.</div></li>
+    </ol>
+  </div>
+
+</div><!-- /container -->
+
+<div class="footer">
+  App Trajetória · Gêmeo Digital Vertiporto SJC · ITA / VertiMob · 2026<br>
+  Cadeia de agentes: especialista-trajetoria → statistician → technical_writer → dashboard_engineer
+</div>
+
+<script>
+// Dados reais calculados pelo statistician a partir dos CSVs
+const easaAGL = [
+  {x: 0,    y: 0},
+  {x: 40,   y: 30.75},
+  {x: 200,  y: 50.75},
+  {x: 400,  y: 75.75},
+  {x: 600,  y: 100.75},
+  {x: 800,  y: 125.75},
+  {x: 1010, y: 152.0}
+];
+
+const faaAGL = [
+  {x: 0,     y: 0},
+  {x: 16.2,  y: 0.125},
+  {x: 100.1, y: 10.618},
+  {x: 200.1, y: 23.109},
+  {x: 300.0, y: 35.601},
+  {x: 400.0, y: 48.094},
+  {x: 499.9, y: 60.588},
+  {x: 601.8, y: 73.331}
+];
+
+const chartConfig = (title) => ({
+  type: 'line',
+  data: {
+    datasets: [
+      {
+        label: 'EASA Subpart 2 (R1/R2)',
+        data: easaAGL,
+        borderColor: '#3182bd',
+        backgroundColor: 'rgba(49,130,189,0.08)',
+        borderWidth: 2.5,
+        pointRadius: 5,
+        pointBackgroundColor: '#3182bd',
+        tension: 0.1,
+        fill: true
+      },
+      {
+        label: 'FAA EB-105A (P1/P2)',
+        data: faaAGL,
+        borderColor: '#9ecae1',
+        backgroundColor: 'rgba(158,202,225,0.12)',
+        borderWidth: 2.5,
+        pointRadius: 5,
+        pointBackgroundColor: '#9ecae1',
+        tension: 0.1,
+        fill: true
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { position: 'top', labels: { font: { size: 11 }, padding: 14 } },
+      tooltip: {
+        callbacks: {
+          label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)} m AGL @ ${ctx.parsed.x.toFixed(0)} m do pad`
+        }
+      }
+    },
+    scales: {
+      x: {
+        type: 'linear',
+        title: { display: true, text: 'Distância ao TLOF (m)', font: { size: 11 } },
+        grid: { color: 'rgba(0,0,0,0.06)' },
+        min: 0
+      },
+      y: {
+        title: { display: true, text: 'Altitude AGL (m)', font: { size: 11 } },
+        grid: { color: 'rgba(0,0,0,0.06)' },
+        min: 0
+      }
+    }
+  }
+});
+
+new Chart(document.getElementById('chart0'), chartConfig('Orientação 0°'));
+new Chart(document.getElementById('chart180'), chartConfig('Orientação 180°'));
+</script>
+</body>
+</html>
