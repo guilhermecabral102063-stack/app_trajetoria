@@ -10,10 +10,10 @@
   body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f5f6fa; color: #222; font-size: 14px; }
 
   header {
-    background: #1a2744;
+    background: #08519c;
     color: #fff;
     padding: 24px 32px;
-    border-bottom: 3px solid #2d6bcf;
+    border-bottom: 3px solid #3182bd;
   }
   header h1 { font-size: 20px; font-weight: 600; letter-spacing: 0.3px; }
   header p  { margin-top: 4px; color: #a8b8d8; font-size: 13px; }
@@ -22,8 +22,8 @@
 
   section { margin-bottom: 36px; }
   section > h2 {
-    font-size: 15px; font-weight: 600; color: #1a2744;
-    border-left: 4px solid #2d6bcf; padding-left: 10px;
+    font-size: 15px; font-weight: 600; color: #08519c;
+    border-left: 4px solid #3182bd; padding-left: 10px;
     margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.4px;
   }
 
@@ -44,29 +44,29 @@
   .pipeline-step .label { font-size: 12px; color: #555; margin-top: 4px; display: block; }
   .pipeline-step.done  { background: #eef6ee; border-color: #6abf69; }
   .pipeline-step.done  .num { color: #4caf50; }
-  .pipeline-step.active { background: #fff8e1; border-color: #f0b429; }
-  .pipeline-step.active .num { color: #f0b429; }
+  .pipeline-step.active { background: #e8f0fb; border-color: #3182bd; }
+  .pipeline-step.active .num { color: #3182bd; }
   .pipeline-step.pending .num { color: #d0d7e0; }
   .step-badge {
     font-size: 10px; font-weight: 600; padding: 2px 6px;
     border-radius: 3px; display: inline-block; margin-top: 5px;
   }
   .done   .step-badge { background: #c8eac8; color: #2e7d32; }
-  .active .step-badge { background: #fff0b0; color: #7a5800; }
+  .active .step-badge { background: #bdd7e7; color: #08519c; }
   .pending .step-badge { background: #e8eaf0; color: #7a8499; }
 
   /* Tables */
   table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  th { background: #1a2744; color: #fff; padding: 9px 12px; text-align: left; font-weight: 600; }
+  th { background: #08519c; color: #fff; padding: 9px 12px; text-align: left; font-weight: 600; }
   td { padding: 8px 12px; border-bottom: 1px solid #e4e8f0; vertical-align: middle; }
-  tr:nth-child(even) td { background: #f8f9fc; }
+  tr:nth-child(even) td { background: #eff3ff; }
   .tag {
     display: inline-block; padding: 2px 7px; border-radius: 3px;
     font-size: 11px; font-weight: 600; white-space: nowrap;
   }
-  .tag-easa { background: #ddeeff; color: #1a4a8a; }
-  .tag-faa  { background: #e8f4fd; color: #0d6ebd; }
-  .tag-peres{ background: #f0e8ff; color: #5a2d8a; }
+  .tag-easa { background: #d4e8f7; color: #08519c; }
+  .tag-faa  { background: #bdd7e7; color: #08519c; }
+  .tag-peres{ background: #eff3ff; color: #2171b5; }
   .tag-ok   { background: #eaf6ea; color: #2e7d32; }
   .tag-wait { background: #fff3cd; color: #7a5800; }
   .tag-no   { background: #fdecea; color: #c62828; }
@@ -90,17 +90,17 @@
     cursor: pointer;
     transition: background 0.2s, border-color 0.2s;
   }
-  .upload-zone:hover, .upload-zone.drag { background: #edf2ff; border-color: #2d6bcf; }
+  .upload-zone:hover, .upload-zone.drag { background: #eff3ff; border-color: #3182bd; }
   .upload-zone .icon { font-size: 32px; margin-bottom: 10px; }
   .upload-zone p { color: #555; font-size: 13px; }
   .upload-zone .sub { color: #888; font-size: 12px; margin-top: 6px; }
   .upload-zone input[type="file"] { display: none; }
   .btn-upload {
     display: inline-block; margin-top: 14px; padding: 8px 20px;
-    background: #2d6bcf; color: #fff; border-radius: 5px;
+    background: #3182bd; color: #fff; border-radius: 5px;
     font-size: 13px; font-weight: 600; cursor: pointer; border: none;
   }
-  .btn-upload:hover { background: #1a4a8a; }
+  .btn-upload:hover { background: #08519c; }
 
   #statelog-info {
     margin-top: 16px; padding: 12px 16px;
@@ -224,7 +224,7 @@
   <p style="color:#555; font-size:13px; margin-bottom:16px;">
     Trajetórias de referência derivadas dos arquivos CSV de rampa. Ambos os regulamentos
     aplicam gradiente de 12,5%; a diferença está na extensão total da rampa.
-    Eixo X = distância ao TLOF (m) &nbsp;|&nbsp; Eixo Y = altitude AGL (m).
+    Eixo X = distância ao TLOF (m) &nbsp;|&nbsp; Eixo Y = altitude MSL (m).
   </p>
   <div class="charts-row">
     <div class="chart-box">
@@ -265,7 +265,7 @@
   <div id="statelog-charts">
     <div class="charts-row" style="margin-top:20px;">
       <div class="chart-box">
-        <h3>Perfil Simulado — Distância vs. Altitude AGL</h3>
+        <h3>Perfil Simulado — Distância vs. Altitude (m MSL)</h3>
         <canvas id="chart-statelog-profile"></canvas>
       </div>
       <div class="chart-box">
@@ -333,51 +333,82 @@ function toAgl(pts) {
   return pts.map(p => ({x: p.dist, y: +(p.alt - TLOF_ALT_M).toFixed(3)}));
 }
 
+/* Opções base — replicando o rc_context do matplotlib:
+   facecolor white, no top/right spines, grid alpha=0.3 dashed, font 11 */
+const GRID_STYLE = { color: 'rgba(0,0,0,0.15)', lineWidth: 0.7, borderDash: [4, 4] };
+const AXIS_TITLE = { display: true, font: { size: 11 } };
+
 const baseOpts = {
   responsive: true,
   maintainAspectRatio: true,
   animation: false,
   plugins: {
-    legend: { position: 'top', labels: { font: { size: 12 } } }
+    legend: {
+      position: 'upper-right',
+      align: 'end',
+      labels: { font: { size: 11 }, boxWidth: 20, padding: 12 }
+    }
   },
   scales: {
     x: {
       type: 'linear',
-      title: { display: true, text: 'Distância ao TLOF (m)', font: { size: 12 } },
-      grid: { color: 'rgba(0,0,0,0.06)' }
+      title: { ...AXIS_TITLE, text: 'Distância ao TLOF (m)' },
+      grid: GRID_STYLE,
+      border: { display: false }
     },
     y: {
-      title: { display: true, text: 'Altitude AGL (m)', font: { size: 12 } },
-      grid: { color: 'rgba(0,0,0,0.06)' }
+      title: { ...AXIS_TITLE, text: 'Altitude (m)' },
+      grid: GRID_STYLE,
+      border: { display: false }
     }
   }
 };
 
-function profileChart(canvasId, easaData, faaData) {
+function profileChart(canvasId, easaData, faaData, figNum, degrees) {
+  // Usa altitude MSL (alt_m) igual ao matplotlib — sem conversão AGL
+  const toMsl = pts => pts.map(p => ({x: p.dist, y: p.alt}));
   new Chart(document.getElementById(canvasId), {
     type: 'line',
     data: {
       datasets: [
         {
           label: 'EASA Subpart 2',
-          data: toAgl(easaData),
-          borderColor: '#3182bd', backgroundColor: 'rgba(49,130,189,0.08)',
-          borderWidth: 2, pointRadius: 3, fill: false, tension: 0
+          data: toMsl(easaData),
+          borderColor: '#9ecae1',
+          backgroundColor: 'rgba(158,202,225,0.10)',
+          borderWidth: 2, pointRadius: 0, fill: false, tension: 0
         },
         {
           label: 'FAA EB-105A',
-          data: toAgl(faaData),
-          borderColor: '#e07b39', backgroundColor: 'rgba(224,123,57,0.08)',
-          borderWidth: 2, pointRadius: 3, fill: false, tension: 0
+          data: toMsl(faaData),
+          borderColor: '#3182bd',
+          backgroundColor: 'rgba(49,130,189,0.10)',
+          borderWidth: 2, pointRadius: 0, fill: false, tension: 0
         }
       ]
     },
-    options: baseOpts
+    options: {
+      ...baseOpts,
+      plugins: {
+        ...baseOpts.plugins,
+        title: {
+          display: true,
+          text: `Figura ${figNum} — Perfil de Rampa de Aproximação (Orientação ${degrees}°)`,
+          font: { size: 11, weight: 'bold' },
+          color: '#222',
+          padding: { bottom: 10 }
+        },
+        legend: {
+          position: 'top', align: 'end',
+          labels: { font: { size: 11 }, boxWidth: 20, padding: 12 }
+        }
+      }
+    }
   });
 }
 
-profileChart('chart0',   EASA_0,   FAA_0);
-profileChart('chart180', EASA_180, FAA_180);
+profileChart('chart0',   EASA_0,   FAA_0,   1, '0');
+profileChart('chart180', EASA_180, FAA_180, 2, '180');
 
 /* ── Upload e parse do STATELOG BlueSky ── */
 let charts = { profile: null, speed: null, ez: null };
@@ -476,20 +507,37 @@ function nominalAgl(dist_m, rampPts) {
 function renderStatelog(rows) {
   Object.values(charts).forEach(c => c && c.destroy());
 
-  const simAgl  = rows.map(r => ({x: r.dist, y: +(r.alt - TLOF_ALT_M).toFixed(3)}));
+  // Altitude MSL (igual ao Python) para o perfil; AGL apenas para e_z
+  const simMsl  = rows.map(r => ({x: r.dist, y: r.alt}));
+  const nomMsl  = EASA_0.map(p => ({x: p.dist, y: p.alt}));
   const ezData  = rows.map(r => ({
     x: r.dist,
-    y: +( (r.alt - TLOF_ALT_M) - nominalAgl(r.dist, EASA_0) ).toFixed(3)
+    y: +(r.alt - (nominalAgl(r.dist, EASA_0) + TLOF_ALT_M)).toFixed(3)
   }));
   const casData = rows.filter(r => r.cas !== null).map(r => ({x: r.dist, y: r.cas}));
   const tasData = rows.filter(r => r.tas !== null).map(r => ({x: r.dist, y: r.tas}));
+
+  const speedOpts = {
+    ...baseOpts,
+    scales: {
+      x: { type:'linear', title:{ ...AXIS_TITLE, text:'Distância ao TLOF (m)' }, grid: GRID_STYLE, border:{ display:false } },
+      y: { title:{ ...AXIS_TITLE, text:'Velocidade (kt)'  }, grid: GRID_STYLE, border:{ display:false } }
+    }
+  };
+  const ezOpts = {
+    ...baseOpts,
+    scales: {
+      x: { type:'linear', title:{ ...AXIS_TITLE, text:'Distância ao TLOF (m)' }, grid: GRID_STYLE, border:{ display:false } },
+      y: { title:{ ...AXIS_TITLE, text:'e_z = simulado − nominal (m)' }, grid: GRID_STYLE, border:{ display:false } }
+    }
+  };
 
   charts.profile = new Chart(document.getElementById('chart-statelog-profile'), {
     type: 'line',
     data: {
       datasets: [
-        { label: 'Simulado (BlueSky)', data: simAgl, borderColor: '#2c8a42', borderWidth: 2, pointRadius: 0, fill: false, tension: 0 },
-        { label: 'Nominal EASA', data: toAgl(EASA_0), borderColor: '#3182bd', borderDash:[5,4], borderWidth:1.5, pointRadius:0, fill:false, tension:0 }
+        { label: 'Simulado (BlueSky)', data: simMsl, borderColor: '#6baed6', borderWidth: 2, pointRadius: 0, fill: false, tension: 0 },
+        { label: 'Nominal EASA',       data: nomMsl, borderColor: '#9ecae1', borderDash:[5,4], borderWidth:1.5, pointRadius:0, fill:false, tension:0 }
       ]
     },
     options: baseOpts
@@ -499,17 +547,11 @@ function renderStatelog(rows) {
     type: 'line',
     data: {
       datasets: [
-        { label: 'CAS (kt)', data: casData, borderColor: '#3182bd', borderWidth: 1.8, pointRadius: 0, fill: false },
-        { label: 'TAS (kt)', data: tasData, borderColor: '#9ecae1', borderWidth: 1.8, pointRadius: 0, fill: false }
+        { label: 'CAS (kt)', data: casData, borderColor: '#3182bd', borderWidth: 2, pointRadius: 0, fill: false },
+        { label: 'TAS (kt)', data: tasData, borderColor: '#9ecae1', borderWidth: 2, pointRadius: 0, fill: false }
       ]
     },
-    options: {
-      ...baseOpts,
-      scales: {
-        x: { type:'linear', title:{ display:true, text:'Distância ao TLOF (m)' }, grid:{ color:'rgba(0,0,0,0.06)' } },
-        y: { title:{ display:true, text:'Velocidade (kt)' }, grid:{ color:'rgba(0,0,0,0.06)' } }
-      }
-    }
+    options: speedOpts
   });
 
   charts.ez = new Chart(document.getElementById('chart-statelog-ez'), {
@@ -518,17 +560,11 @@ function renderStatelog(rows) {
       datasets: [{
         label: 'e_z (m)',
         data: ezData,
-        borderColor: '#c62828', backgroundColor: 'rgba(198,40,40,0.08)',
+        borderColor: '#08519c', backgroundColor: 'rgba(49,130,189,0.12)',
         borderWidth: 1.8, pointRadius: 0, fill: true, tension: 0
       }]
     },
-    options: {
-      ...baseOpts,
-      scales: {
-        x: { type:'linear', title:{ display:true, text:'Distância ao TLOF (m)' }, grid:{ color:'rgba(0,0,0,0.06)' } },
-        y: { title:{ display:true, text:'e_z = simulado − nominal (m)' }, grid:{ color:'rgba(0,0,0,0.06)' } }
-      }
-    }
+    options: ezOpts
   });
 
   document.getElementById('statelog-charts').style.display = 'block';
