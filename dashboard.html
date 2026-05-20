@@ -383,37 +383,80 @@ profileChart('chart180', EASA_180, FAA_180);
 let charts = { profile: null, speed: null, ez: null };
 
 function parseStatelog(text) {
-  const lines = text.split(/\r?\n/).filter(l => l.trim() && !l.trim().startsWith('#'));
-  if (!lines.length) throw new Error('Arquivo vazio ou sem dados.');
+  const allLines = text.split(/\r?\n/);
 
-  const delim  = lines[0].includes('\t') ? '\t' : ',';
-  const header = lines[0].split(delim).map(h => h.trim().toLowerCase().replace(/traf\./g, ''));
+  // BlueSky escreve o cabeçalho em uma linha "# simt,traf.id,traf.lat,..."
+  // Precisamos varrer TODAS as linhas (inclusive as comentadas) para achar o header.
+  let headerCols = null;
+  let delim = ',';
 
-  const col = name => header.findIndex(h => h === name || h.includes(name));
-  const idxDist = col('distflown') < 0 ? col('dist') : col('distflown');
-  const idxAlt  = col('alt');
-  const idxCas  = col('cas');
-  const idxTas  = col('tas');
-  const idxId   = col('id') < 0 ? col('acid') : col('id');
+  for (const line of allLines) {
+    const raw = line.trim();
+    if (!raw) continue;
+    const candidate = raw.replace(/^#+\s*/, ''); // remove # inicial
+    const d = candidate.includes('\t') ? '\t' : ',';
+    const parts = candidate.split(d).map(s =>
+      s.trim().toLowerCase()
+       .replace(/traf\./g, '')   // "traf.alt" → "alt"
+       .replace(/\(.*?\)/g, '')  // "alt(ft)" → "alt"
+       .replace(/\[.*?\]/g, '')  // "lat[0]"  → "lat"
+       .trim()
+    );
+    const hasAlt  = parts.some(p => p === 'alt');
+    const hasDist = parts.some(p => p === 'distflown' || p === 'dist');
+    const hasLat  = parts.some(p => p === 'lat');
+    if (hasAlt && (hasDist || hasLat)) {
+      headerCols = parts;
+      delim = d;
+      break;
+    }
+  }
+
+  if (!headerCols)
+    throw new Error(
+      'Cabeçalho não reconhecido. O arquivo deve ser um STATELOG do BlueSky ' +
+      '(gerado por CRELOG STATELOG + STATELOG ADD traf.alt traf.distflown ...).'
+    );
+
+  const idxOf = (...names) => {
+    for (const name of names) {
+      const i = headerCols.findIndex(h => h === name || h.startsWith(name));
+      if (i >= 0) return i;
+    }
+    return -1;
+  };
+
+  const idxDist = idxOf('distflown', 'dist');
+  const idxAlt  = idxOf('alt');
+  const idxCas  = idxOf('cas');
+  const idxTas  = idxOf('tas');
+  const idxId   = idxOf('id', 'acid');
 
   if (idxAlt < 0 || idxDist < 0)
-    throw new Error('Colunas obrigatórias não encontradas (alt, distflown). Verifique o formato.');
+    throw new Error(
+      `Colunas obrigatórias ausentes. Cabeçalho detectado: [${headerCols.join(', ')}]. ` +
+      'Verifique se o STATELOG inclui traf.alt e traf.distflown.'
+    );
 
   const rows = [];
-  for (let i = 1; i < lines.length; i++) {
-    const c = lines[i].split(delim);
+  for (const line of allLines) {
+    const raw = line.trim();
+    if (!raw || raw.startsWith('#')) continue;
+    const c = raw.split(delim);
+    // pula linha de cabeçalho sem # (primeiro campo não-numérico)
+    if (isNaN(parseFloat(c[0])) && !c[0].trim().match(/^\d+[:.]/)) continue;
     const alt_ft  = parseFloat(c[idxAlt]);
     const dist_nm = parseFloat(c[idxDist]);
     if (isNaN(alt_ft) || isNaN(dist_nm)) continue;
     rows.push({
       id:   idxId  >= 0 ? c[idxId].trim()     : '',
-      dist: +(dist_nm * 1852).toFixed(1),         // nm → m
-      alt:  +(alt_ft  * 0.3048).toFixed(3),        // ft → m
+      dist: +(dist_nm * 1852).toFixed(1),   // nm → m
+      alt:  +(alt_ft  * 0.3048).toFixed(3), // ft → m
       cas:  idxCas >= 0 ? parseFloat(c[idxCas]) : null,
       tas:  idxTas >= 0 ? parseFloat(c[idxTas]) : null,
     });
   }
-  if (!rows.length) throw new Error('Nenhuma linha de dados válida.');
+  if (!rows.length) throw new Error('Nenhuma linha de dados numéricos encontrada.');
   return rows;
 }
 
