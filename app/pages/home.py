@@ -37,8 +37,9 @@ de rampa preciso com waypoints de altitude e velocidade conforme cada regulament
 
 ## Navegação
 
-<|Trajetórias EASA|button|class_name=plain|>
-<|Trajetórias FAA|button|class_name=plain|>
+<|navbar|>
+
+<|Trajetórias EASA vs. FAA|button|on_action=navigate_trajetorias|class_name=plain|>
 <|Comparativo|button|class_name=plain|>
 <|Sobre|button|class_name=plain|>
 
