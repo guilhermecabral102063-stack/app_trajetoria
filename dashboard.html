@@ -4,649 +4,403 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Trajetória eVTOL — Vertiporto SJC/SBSJ</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f5f6fa; color: #222; font-size: 14px; }
+:root {
+  --bg:     #ffffff;
+  --soft:   #f7f9fb;
+  --paper:  #ffffff;
+  --ink:    #182236;
+  --muted:  #526078;
+  --quiet:  #7c8799;
+  --line:   #dfe6ee;
+  --nav:    #111a2e;
+  --accent: #6f7f97;
+}
 
-  header {
-    background: #08519c;
-    color: #fff;
-    padding: 24px 32px;
-    border-bottom: 3px solid #3182bd;
-  }
-  header h1 { font-size: 20px; font-weight: 600; letter-spacing: 0.3px; }
-  header p  { margin-top: 4px; color: #a8b8d8; font-size: 13px; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  main { max-width: 1200px; margin: 0 auto; padding: 28px 24px; }
+html, body {
+  min-height: 100%;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: Inter, "Segoe UI", system-ui, sans-serif;
+  font-size: 14px;
+}
 
-  section { margin-bottom: 36px; }
-  section > h2 {
-    font-size: 15px; font-weight: 600; color: #08519c;
-    border-left: 4px solid #3182bd; padding-left: 10px;
-    margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.4px;
-  }
+/* ── Shell ── */
+.app-shell  { min-height: 100vh; background: var(--bg); }
+.app-layout {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  min-height: 100vh;
+}
 
-  /* Pipeline */
-  .pipeline { display: flex; gap: 0; align-items: stretch; flex-wrap: wrap; }
-  .pipeline-step {
-    flex: 1; min-width: 140px;
-    padding: 12px 14px;
-    border: 1px solid #d0d7e8;
-    background: #fff;
-    text-align: center;
-  }
-  .pipeline-step:not(:last-child) { border-right: none; }
-  .pipeline-step .num {
-    display: block; font-size: 22px; font-weight: 700;
-    color: #c8d0e0; line-height: 1;
-  }
-  .pipeline-step .label { font-size: 12px; color: #555; margin-top: 4px; display: block; }
-  .pipeline-step.done  { background: #eef6ee; border-color: #6abf69; }
-  .pipeline-step.done  .num { color: #4caf50; }
-  .pipeline-step.active { background: #e8f0fb; border-color: #3182bd; }
-  .pipeline-step.active .num { color: #3182bd; }
-  .pipeline-step.pending .num { color: #d0d7e0; }
-  .step-badge {
-    font-size: 10px; font-weight: 600; padding: 2px 6px;
-    border-radius: 3px; display: inline-block; margin-top: 5px;
-  }
-  .done   .step-badge { background: #c8eac8; color: #2e7d32; }
-  .active .step-badge { background: #bdd7e7; color: #08519c; }
-  .pending .step-badge { background: #e8eaf0; color: #7a8499; }
+/* ── Sidebar ── */
+.sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  padding: 28px 18px;
+  background: #ffffff;
+  border-right: 1px solid var(--line);
+  overflow-y: auto;
+}
+.sidebar-brand {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--quiet);
+  margin-bottom: 14px;
+}
+.sidebar h3 {
+  font-size: 1.08rem;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.2;
+  margin-bottom: 5px;
+}
+.sidebar .sub {
+  font-size: 0.88rem;
+  color: var(--quiet);
+  line-height: 1.35;
+  margin-bottom: 30px;
+}
+.nav { display: grid; gap: 6px; }
+.nav a {
+  display: block;
+  padding: 10px 13px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  color: var(--muted);
+  font-size: 0.92rem;
+  text-decoration: none;
+  line-height: 1.2;
+  transition: background 0.15s, border-color 0.15s;
+}
+.nav a:hover    { background: var(--soft); border-color: var(--line); color: var(--ink); }
+.nav a.active   { background: var(--nav); color: #fff; font-weight: 700; }
 
-  /* Tables */
-  table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  th { background: #08519c; color: #fff; padding: 9px 12px; text-align: left; font-weight: 600; }
-  td { padding: 8px 12px; border-bottom: 1px solid #e4e8f0; vertical-align: middle; }
-  tr:nth-child(even) td { background: #eff3ff; }
-  .tag {
-    display: inline-block; padding: 2px 7px; border-radius: 3px;
-    font-size: 11px; font-weight: 600; white-space: nowrap;
-  }
-  .tag-easa { background: #d4e8f7; color: #08519c; }
-  .tag-faa  { background: #bdd7e7; color: #08519c; }
-  .tag-peres{ background: #eff3ff; color: #2171b5; }
-  .tag-ok   { background: #eaf6ea; color: #2e7d32; }
-  .tag-wait { background: #fff3cd; color: #7a5800; }
-  .tag-no   { background: #fdecea; color: #c62828; }
+/* ── Content ── */
+.content {
+  min-width: 0;
+  padding: 26px 42px 56px;
+  background: var(--bg);
+}
 
-  /* Charts */
-  .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-  .chart-box {
-    background: #fff; border: 1px solid #dde3f0; border-radius: 6px;
-    padding: 16px;
-  }
-  .chart-box h3 { font-size: 13px; color: #444; margin-bottom: 12px; font-weight: 600; }
-  .chart-box canvas { max-height: 280px; }
+/* ── Topbar ── */
+.topbar {
+  display: flex;
+  align-items: baseline;
+  gap: 18px;
+  margin-bottom: 28px;
+}
+.topbar-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+.topbar-note {
+  font-size: 0.85rem;
+  color: var(--quiet);
+}
 
-  /* Upload */
-  .upload-zone {
-    border: 2px dashed #9ab0d8;
-    border-radius: 8px;
-    background: #f8faff;
-    padding: 36px 20px;
-    text-align: center;
-    cursor: pointer;
-    transition: background 0.2s, border-color 0.2s;
-  }
-  .upload-zone:hover, .upload-zone.drag { background: #eff3ff; border-color: #3182bd; }
-  .upload-zone .icon { font-size: 32px; margin-bottom: 10px; }
-  .upload-zone p { color: #555; font-size: 13px; }
-  .upload-zone .sub { color: #888; font-size: 12px; margin-top: 6px; }
-  .upload-zone input[type="file"] { display: none; }
-  .btn-upload {
-    display: inline-block; margin-top: 14px; padding: 8px 20px;
-    background: #3182bd; color: #fff; border-radius: 5px;
-    font-size: 13px; font-weight: 600; cursor: pointer; border: none;
-  }
-  .btn-upload:hover { background: #08519c; }
+/* ── Cards ── */
+.hero-card,
+.feature-card,
+.info-card,
+.reference-card {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 24px;
+}
+.hero-card     { padding: 24px 28px; margin-bottom: 24px; }
+.feature-card  { padding: 22px 24px; margin-bottom: 18px; }
+.reference-card{ padding: 22px 24px; margin-bottom: 18px; }
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 24px;
+}
+.info-card { padding: 18px 20px; text-align: center; }
+.info-card .val {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1;
+}
+.info-card .val.pending { color: #c0392b; }
+.info-card .lbl {
+  font-size: 0.82rem;
+  color: var(--quiet);
+  margin-top: 6px;
+}
 
-  #statelog-info {
-    margin-top: 16px; padding: 12px 16px;
-    border-radius: 6px; font-size: 13px;
-    display: none;
-  }
-  #statelog-info.ok  { background: #eaf6ea; border: 1px solid #a5d6a7; color: #1b5e20; }
-  #statelog-info.err { background: #fdecea; border: 1px solid #ef9a9a; color: #b71c1c; }
+/* ── Section title ── */
+.section-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--quiet);
+  margin-bottom: 12px;
+  margin-top: 10px;
+}
 
-  #statelog-charts { display: none; margin-top: 20px; }
+/* ── Pipeline ── */
+.pipeline {
+  display: flex;
+  gap: 0;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  overflow: hidden;
+}
+.pipeline-step {
+  flex: 1;
+  padding: 14px 16px;
+  background: var(--soft);
+  text-align: center;
+  border-right: 1px solid var(--line);
+}
+.pipeline-step:last-child { border-right: none; }
+.pipeline-step .num {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--line);
+  line-height: 1;
+}
+.pipeline-step .label { font-size: 0.78rem; color: var(--quiet); margin-top: 4px; }
+.pipeline-step .badge {
+  display: inline-block;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 4px;
+  margin-top: 6px;
+}
+.step-done   { background: #f0faf0; }
+.step-done   .num   { color: #27ae60; }
+.step-done   .badge { background: #d4edda; color: #155724; }
+.step-active { background: #f0f5ff; }
+.step-active .num   { color: #2171b5; }
+.step-active .badge { background: #cfe2ff; color: #0a2e6e; }
+.step-pending .badge { background: #e8eaf0; color: var(--quiet); }
 
-  /* Info box */
-  .info-box {
-    background: #fff8e1; border: 1px solid #f0b429; border-radius: 6px;
-    padding: 14px 16px; font-size: 13px; color: #5a4000; line-height: 1.6;
-  }
+/* ── Table ── */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+th {
+  background: var(--nav);
+  color: #fff;
+  padding: 9px 12px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+}
+th:first-child { border-radius: 8px 0 0 8px; }
+th:last-child  { border-radius: 0 8px 8px 0; }
+td {
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  vertical-align: middle;
+}
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--soft); }
 
-  pre {
-    background: #1a2744; color: #c8d8f8; padding: 14px 16px;
-    border-radius: 6px; font-size: 12px; overflow-x: auto;
-    line-height: 1.6; margin-top: 10px;
-  }
+/* ── Tags ── */
+.tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.tag-easa   { background: #dbeafe; color: #1e3a8a; }
+.tag-faa    { background: #e0e7ff; color: #312e81; }
+.tag-peres  { background: #f1f5f9; color: var(--muted); }
+.tag-ok     { background: #dcfce7; color: #166534; }
+.tag-wait   { background: #fef9c3; color: #713f12; }
+.tag-no     { background: #fee2e2; color: #991b1b; }
 
-  /* Cards */
-  .cards-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
-  .card {
-    background: #fff; border: 1px solid #dde3f0; border-radius: 6px;
-    padding: 14px 16px; text-align: center;
-  }
-  .card .val { font-size: 28px; font-weight: 700; color: #1a2744; line-height: 1; }
-  .card .lbl { font-size: 12px; color: #666; margin-top: 5px; }
+/* ── Info note ── */
+.note {
+  background: var(--soft);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 14px 18px;
+  font-size: 0.84rem;
+  color: var(--muted);
+  line-height: 1.6;
+}
+.note strong { color: var(--ink); }
+pre {
+  background: #111a2e;
+  color: #c8d8f8;
+  padding: 14px 18px;
+  border-radius: 10px;
+  font-size: 0.78rem;
+  overflow-x: auto;
+  line-height: 1.7;
+  margin-top: 10px;
+}
 
-  @media (max-width: 768px) {
-    .charts-row { grid-template-columns: 1fr; }
-    .cards-row  { grid-template-columns: 1fr 1fr; }
-    .pipeline   { flex-direction: column; }
-    .pipeline-step:not(:last-child) { border-right: 1px solid #d0d7e8; border-bottom: none; }
-  }
+/* ── Responsive ── */
+@media (max-width: 960px) {
+  .app-layout { grid-template-columns: 1fr; }
+  .sidebar { position: static; height: auto; border-right: none; border-bottom: 1px solid var(--line); }
+  .content { padding: 20px; }
+  .cards-grid { grid-template-columns: 1fr 1fr; }
+  .pipeline { flex-direction: column; border-radius: 14px; }
+  .pipeline-step { border-right: none; border-bottom: 1px solid var(--line); }
+  .pipeline-step:last-child { border-bottom: none; }
+}
 </style>
 </head>
 <body>
 
-<header>
-  <h1>Trajetória eVTOL — Vertiporto SJC/SBSJ</h1>
-  <p>Desvios em relação às trajetórias de pouso e decolagem &nbsp;|&nbsp; EASA Subpart 2 vs. FAA EB-105A &nbsp;|&nbsp; Simulação: BlueSky ATC (TU Delft, GPL v3)</p>
-</header>
+<div class="app-shell">
+<div class="app-layout">
 
-<main>
+<!-- ── Sidebar ── -->
+<div class="sidebar">
+  <div class="sidebar-brand">VertiMob · ITA · ANAC</div>
+  <h3>Trajetória eVTOL</h3>
+  <p class="sub">Vertiporto SJC/SBSJ<br>Sandbox Regulatório</p>
+  <nav class="nav">
+    <a href="#pipeline"  class="active">Pipeline</a>
+    <a href="#estado">Estado Atual</a>
+    <a href="#cenarios">Cenários</a>
+    <a href="#proximos">Próximos Passos</a>
+  </nav>
+</div>
 
-<!-- 1. Pipeline -->
-<section>
-  <h2>Pipeline — Tarefa 6</h2>
-  <div class="pipeline">
-    <div class="pipeline-step done">
-      <span class="num">1</span>
-      <span class="label">Definição dos Cenários</span>
-      <span class="step-badge">Concluído</span>
-    </div>
-    <div class="pipeline-step done">
-      <span class="num">2</span>
-      <span class="label">Geração das Rampas (CSV)</span>
-      <span class="step-badge">Concluído</span>
-    </div>
-    <div class="pipeline-step active">
-      <span class="num">3</span>
-      <span class="label">Execução BlueSky (.scn)</span>
-      <span class="step-badge">Em andamento</span>
-    </div>
-    <div class="pipeline-step pending">
-      <span class="num">4</span>
-      <span class="label">Análise dos Desvios e_y / e_z</span>
-      <span class="step-badge">Pendente</span>
-    </div>
-    <div class="pipeline-step pending">
-      <span class="num">5</span>
-      <span class="label">Monte Carlo</span>
-      <span class="step-badge">Pendente</span>
-    </div>
-  </div>
-</section>
+<!-- ── Content ── -->
+<div class="content">
 
-<!-- 2. Cards -->
-<section>
-  <h2>Estado Atual</h2>
-  <div class="cards-row">
-    <div class="card"><div class="val">8</div><div class="lbl">Arquivos .scn criados</div></div>
-    <div class="card"><div class="val">4</div><div class="lbl">Rampas nominais definidas</div></div>
-    <div class="card"><div class="val" style="color:#e57373">0</div><div class="lbl">STATELOGs executados</div></div>
-    <div class="card"><div class="val" style="color:#e57373">0</div><div class="lbl">Corridas Monte Carlo</div></div>
-  </div>
-</section>
-
-<!-- 3. Cenários -->
-<section>
-  <h2>Cenários</h2>
-  <table>
-    <thead>
-      <tr>
-        <th>#</th><th>Regulamento</th><th>Config.</th><th>Orient.</th>
-        <th>Rota</th><th>Extensão (m)</th><th>Δ Alt (m)</th><th>Gradiente</th>
-        <th>.scn</th><th>STATELOG</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr><td>1</td><td><span class="tag tag-easa">EASA Subpart 2</span></td><td>R1</td><td>0°</td><td>SBGR → SJK</td><td>1 010</td><td>152,0</td><td>12,5%</td><td><span class="tag tag-ok">Criado</span></td><td><span class="tag tag-no">Pendente</span></td></tr>
-      <tr><td>2</td><td><span class="tag tag-easa">EASA Subpart 2</span></td><td>R1</td><td>0°</td><td>Taubaté → SJK</td><td>1 010</td><td>152,0</td><td>12,5%</td><td><span class="tag tag-ok">Criado</span></td><td><span class="tag tag-no">Pendente</span></td></tr>
-      <tr><td>3</td><td><span class="tag tag-easa">EASA Subpart 2</span></td><td>R2</td><td>180°</td><td>SBGR → SJK</td><td>1 010</td><td>152,0</td><td>12,5%</td><td><span class="tag tag-ok">Criado</span></td><td><span class="tag tag-no">Pendente</span></td></tr>
-      <tr><td>4</td><td><span class="tag tag-easa">EASA Subpart 2</span></td><td>R2</td><td>180°</td><td>Taubaté → SJK</td><td>1 010</td><td>152,0</td><td>12,5%</td><td><span class="tag tag-ok">Criado</span></td><td><span class="tag tag-no">Pendente</span></td></tr>
-      <tr><td>5</td><td><span class="tag tag-faa">FAA EB-105A</span></td><td>P1</td><td>0°</td><td>SBGR → SJK</td><td>602,8</td><td>73,5</td><td>12,5%</td><td><span class="tag tag-ok">Criado</span></td><td><span class="tag tag-no">Pendente</span></td></tr>
-      <tr><td>6</td><td><span class="tag tag-faa">FAA EB-105A</span></td><td>P1</td><td>0°</td><td>Taubaté → SJK</td><td>602,8</td><td>73,5</td><td>12,5%</td><td><span class="tag tag-ok">Criado</span></td><td><span class="tag tag-no">Pendente</span></td></tr>
-      <tr><td>7</td><td><span class="tag tag-faa">FAA EB-105A</span></td><td>P2</td><td>180°</td><td>SBGR → SJK</td><td>602,8</td><td>73,5</td><td>12,5%</td><td><span class="tag tag-ok">Criado</span></td><td><span class="tag tag-no">Pendente</span></td></tr>
-      <tr><td>8</td><td><span class="tag tag-faa">FAA EB-105A</span></td><td>P2</td><td>180°</td><td>Taubaté → SJK</td><td>602,8</td><td>73,5</td><td>12,5%</td><td><span class="tag tag-ok">Criado</span></td><td><span class="tag tag-no">Pendente</span></td></tr>
-      <tr><td>9–12</td><td><span class="tag tag-peres">Peres (legado)</span></td><td>VAC SBSJ</td><td>Var.</td><td>Var.</td><td>—</td><td>—</td><td>—</td><td><span class="tag tag-ok">Criado</span></td><td><span class="tag tag-no">Pendente</span></td></tr>
-    </tbody>
-  </table>
-</section>
-
-<!-- 4. Perfis nominais -->
-<section>
-  <h2>Perfis de Rampa Nominal</h2>
-  <p style="color:#555; font-size:13px; margin-bottom:16px;">
-    Trajetórias de referência derivadas dos arquivos CSV de rampa. Ambos os regulamentos
-    aplicam gradiente de 12,5%; a diferença está na extensão total da rampa.
-    Eixo X = distância ao TLOF (m) &nbsp;|&nbsp; Eixo Y = altitude MSL (m).
-  </p>
-  <div class="charts-row">
-    <div class="chart-box">
-      <h3>Orientação 0° — Perfil de Rampa de Aproximação</h3>
-      <canvas id="chart0"></canvas>
-    </div>
-    <div class="chart-box">
-      <h3>Orientação 180° — Perfil de Rampa de Aproximação</h3>
-      <canvas id="chart180"></canvas>
-    </div>
-  </div>
-</section>
-
-<!-- 5. STATELOG BlueSky -->
-<section>
-  <h2>Output da Simulação BlueSky — STATELOG</h2>
-
-  <div class="info-box" style="margin-bottom:16px;">
-    <strong>Como gerar o STATELOG:</strong> execute o cenário no BlueSky; o arquivo de log é
-    gravado automaticamente em <code>output/&lt;nome_cenário&gt;_STATELOG.csv</code>.
-    O log registra a cada 0,1 s: <em>time, id, lat, lon, distflown (nm), alt (ft), cas, tas, gs (kt)</em>.
-    Após a simulação, carregue o arquivo abaixo para visualizar a trajetória simulada
-    sobreposta à rampa nominal e calcular o desvio vertical e_z.
+  <div class="topbar">
+    <span class="topbar-title">Desvios de Trajetória de Pouso — eVTOL SBSJ</span>
+    <span class="topbar-note">EASA Subpart 2 vs. FAA EB-105A · Simulação BlueSky (TU Delft, GPL v3)</span>
   </div>
 
-  <div style="margin-bottom:14px; font-size:13px;">
-    <label for="refSelect" style="font-weight:600; color:#1a2744;">Referência nominal para e_z:</label>
-    <select id="refSelect" style="margin-left:10px; padding:5px 10px; border:1px solid #c8d0e0; border-radius:4px; font-size:13px; background:#fff;">
-      <option value="EASA_0">EASA Subpart 2 — Orientação 0° (R1)</option>
-      <option value="EASA_180">EASA Subpart 2 — Orientação 180° (R2)</option>
-      <option value="FAA_0">FAA EB-105A — Orientação 0° (P1)</option>
-      <option value="FAA_180">FAA EB-105A — Orientação 180° (P2)</option>
-    </select>
-  </div>
-
-  <div class="upload-zone" id="dropzone">
-    <div class="icon">📂</div>
-    <p>Arraste o arquivo STATELOG do BlueSky aqui</p>
-    <p class="sub">CSV com colunas: time, id, lat, lon, distflown, alt, cas, tas, gs</p>
-    <label class="btn-upload">
-      Selecionar arquivo
-      <input type="file" id="fileInput" accept=".csv,.log,.txt">
-    </label>
-  </div>
-
-  <div id="statelog-info"></div>
-
-  <div id="statelog-charts">
-    <div class="charts-row" style="margin-top:20px;">
-      <div class="chart-box">
-        <h3>Perfil Simulado — Distância vs. Altitude (m MSL)</h3>
-        <canvas id="chart-statelog-profile"></canvas>
+  <!-- 1. Pipeline -->
+  <a id="pipeline"></a>
+  <div class="section-title">Pipeline — Tarefa 6</div>
+  <div class="hero-card" style="padding:18px 22px;">
+    <div class="pipeline">
+      <div class="pipeline-step step-done">
+        <span class="num">1</span>
+        <span class="label">Definição dos Cenários</span>
+        <span class="badge">Concluído</span>
       </div>
-      <div class="chart-box">
-        <h3>Velocidade ao Longo da Trajetória</h3>
-        <canvas id="chart-statelog-speed"></canvas>
+      <div class="pipeline-step step-done">
+        <span class="num">2</span>
+        <span class="label">Geração das Rampas (CSV)</span>
+        <span class="badge">Concluído</span>
+      </div>
+      <div class="pipeline-step step-active">
+        <span class="num">3</span>
+        <span class="label">Execução BlueSky (.scn)</span>
+        <span class="badge">Em andamento</span>
+      </div>
+      <div class="pipeline-step step-pending">
+        <span class="num">4</span>
+        <span class="label">Análise dos Desvios e_y / e_z</span>
+        <span class="badge">Pendente</span>
+      </div>
+      <div class="pipeline-step step-pending">
+        <span class="num">5</span>
+        <span class="label">Monte Carlo</span>
+        <span class="badge">Pendente</span>
       </div>
     </div>
-    <div class="chart-box" style="margin-top:20px;">
-      <h3>Desvio Vertical e_z = Simulado − Nominal (m)</h3>
-      <canvas id="chart-statelog-ez"></canvas>
+  </div>
+
+  <!-- 2. Estado Atual -->
+  <a id="estado"></a>
+  <div class="section-title">Estado Atual</div>
+  <div class="cards-grid">
+    <div class="info-card">
+      <div class="val">8</div>
+      <div class="lbl">Arquivos .scn criados</div>
+    </div>
+    <div class="info-card">
+      <div class="val">4</div>
+      <div class="lbl">Rampas nominais definidas</div>
+    </div>
+    <div class="info-card">
+      <div class="val pending">0</div>
+      <div class="lbl">STATELOGs executados</div>
+    </div>
+    <div class="info-card">
+      <div class="val pending">0</div>
+      <div class="lbl">Corridas Monte Carlo</div>
     </div>
   </div>
 
-  <div style="margin-top:20px;">
-    <strong style="font-size:13px; color:#1a2744;">Referência — execução BlueSky:</strong>
+  <!-- 3. Cenários -->
+  <a id="cenarios"></a>
+  <div class="section-title">Cenários</div>
+  <div class="reference-card">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Regulamento</th>
+            <th>Config.</th>
+            <th>Orient.</th>
+            <th>Rota</th>
+            <th>Extensão (m)</th>
+            <th>Δ Alt (m)</th>
+            <th>Gradiente</th>
+            <th>.scn</th>
+            <th>STATELOG</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>1</td><td><span class="tag tag-easa">EASA Subpart 2</span></td><td>R1</td><td>0°</td><td>SBGR → SJK</td><td>1 010</td><td>152,0</td><td>12,5%</td><td><span class="tag tag-ok">Criado</span></td><td><span class="tag tag-no">Pendente</span></td></tr>
+          <tr><td>2</td><td><span class="tag tag-easa">EASA Subpart 2</span></td><td>R1</td><td>0°</td><td>Taubaté → SJK</td><td>1 010</td><td>152,0</td><td>12,5%</td><td><span class="tag tag-ok">Criado</span></td><td><span class="tag tag-no">Pendente</span></td></tr>
+          <tr><td>3</td><td><span class="tag tag-easa">EASA Subpart 2</span></td><td>R2</td><td>180°</td><td>SBGR → SJK</td><td>1 010</td><td>152,0</td><td>12,5%</td><td><span class="tag tag-ok">Criado</span></td><td><span class="tag tag-no">Pendente</span></td></tr>
+          <tr><td>4</td><td><span class="tag tag-easa">EASA Subpart 2</span></td><td>R2</td><td>180°</td><td>Taubaté → SJK</td><td>1 010</td><td>152,0</td><td>12,5%</td><td><span class="tag tag-ok">Criado</span></td><td><span class="tag tag-no">Pendente</span></td></tr>
+          <tr><td>5</td><td><span class="tag tag-faa">FAA EB-105A</span></td><td>R1</td><td>0°</td><td>SBGR → SJK</td><td>602,8</td><td>73,5</td><td>12,5%</td><td><span class="tag tag-ok">Criado</span></td><td><span class="tag tag-no">Pendente</span></td></tr>
+          <tr><td>6</td><td><span class="tag tag-faa">FAA EB-105A</span></td><td>R1</td><td>0°</td><td>Taubaté → SJK</td><td>602,8</td><td>73,5</td><td>12,5%</td><td><span class="tag tag-ok">Criado</span></td><td><span class="tag tag-no">Pendente</span></td></tr>
+          <tr><td>7</td><td><span class="tag tag-faa">FAA EB-105A</span></td><td>R2</td><td>180°</td><td>SBGR → SJK</td><td>602,8</td><td>73,5</td><td>12,5%</td><td><span class="tag tag-ok">Criado</span></td><td><span class="tag tag-no">Pendente</span></td></tr>
+          <tr><td>8</td><td><span class="tag tag-faa">FAA EB-105A</span></td><td>R2</td><td>180°</td><td>Taubaté → SJK</td><td>602,8</td><td>73,5</td><td>12,5%</td><td><span class="tag tag-ok">Criado</span></td><td><span class="tag tag-no">Pendente</span></td></tr>
+          <tr><td>9–12</td><td><span class="tag tag-peres">Peres (legado)</span></td><td>VAC SBSJ</td><td>Var.</td><td>Var.</td><td>—</td><td>—</td><td>—</td><td><span class="tag tag-ok">Criado</span></td><td><span class="tag tag-no">Pendente</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 4. Próximos Passos -->
+  <a id="proximos"></a>
+  <div class="section-title">Próximos Passos</div>
+  <div class="feature-card">
+    <div class="note">
+      <strong>Como gerar os STATELOGs:</strong> execute cada cenário <code>.scn</code> no BlueSky.
+      O log é gravado automaticamente em <code>output/&lt;nome_cenário&gt;_STATELOG.csv</code>.
+      Após a simulação, coloque os 8 arquivos em <code>logs/</code> para ativar a visualização 3D.
+    </div>
     <pre>
 # Iniciar BlueSky:
 python BlueSky.py
 
 # No console BlueSky:
-> IC scenario_EASA_OFV1_0deg_chegada.scn
-> FF           # fast-forward até fim da simulação
+> IC scenario_EASA_R1_0_SBGR_SJK.scn
+> FF
 > HOLD
-# STATELOG gravado em: output/&lt;nome&gt;_STATELOG.csv
+# STATELOG gravado em: output/scenario_EASA_R1_0_SBGR_SJK_STATELOG.csv
     </pre>
   </div>
-</section>
 
-</main>
+</div><!-- /content -->
+</div><!-- /app-layout -->
+</div><!-- /app-shell -->
 
-<script>
-/* ── Dados nominais (extraídos dos CSVs de rampa) ── */
-const TLOF_ALT_M = 639.541; // altitude MSL do TLOF em metros
-
-const EASA_0 = [
-  {dist:0,alt:639.541},{dist:118,alt:680.041},{dist:199,alt:690.166},
-  {dist:280,alt:700.291},{dist:361,alt:710.416},{dist:442,alt:720.541},
-  {dist:523,alt:730.666},{dist:604,alt:740.791},{dist:685,alt:750.916},
-  {dist:766,alt:761.041},{dist:847,alt:771.166},{dist:928,alt:781.291},
-  {dist:1009,alt:791.416},{dist:1010,alt:791.541}
-];
-const EASA_180 = [
-  {dist:0,alt:639.541},{dist:118,alt:680.041},{dist:199,alt:690.166},
-  {dist:280,alt:700.291},{dist:361,alt:710.416},{dist:442,alt:720.541},
-  {dist:523,alt:730.666},{dist:604,alt:740.791},{dist:685,alt:750.916},
-  {dist:766,alt:761.041},{dist:847,alt:771.166},{dist:928,alt:781.291},
-  {dist:1009,alt:791.416},{dist:1010,alt:791.541}
-];
-const FAA_0 = [
-  {dist:0,alt:639.541},{dist:63.2,alt:645.537},{dist:112.1,alt:651.658},
-  {dist:161.1,alt:657.779},{dist:210.1,alt:663.9},{dist:259,alt:670.021},
-  {dist:308,alt:676.142},{dist:357,alt:682.263},{dist:406,alt:688.385},
-  {dist:454.9,alt:694.507},{dist:503.9,alt:700.628},{dist:552.9,alt:706.75},
-  {dist:601.8,alt:712.872},{dist:602.8,alt:712.997}
-];
-const FAA_180 = [
-  {dist:0,alt:639.541},{dist:63.2,alt:645.537},{dist:112.1,alt:651.658},
-  {dist:161.1,alt:657.779},{dist:210.1,alt:663.9},{dist:259,alt:670.021},
-  {dist:308,alt:676.142},{dist:357,alt:682.263},{dist:406,alt:688.385},
-  {dist:454.9,alt:694.507},{dist:503.9,alt:700.628},{dist:552.9,alt:706.75},
-  {dist:601.8,alt:712.872},{dist:602.8,alt:712.997}
-];
-
-function toAgl(pts) {
-  return pts.map(p => ({x: p.dist, y: +(p.alt - TLOF_ALT_M).toFixed(3)}));
-}
-
-/* Opções base — replicando o rc_context do matplotlib:
-   facecolor white, no top/right spines, grid alpha=0.3 dashed, font 11 */
-const GRID_STYLE = { color: 'rgba(0,0,0,0.15)', lineWidth: 0.7, borderDash: [4, 4] };
-const AXIS_TITLE = { display: true, font: { size: 11 } };
-
-const baseOpts = {
-  responsive: true,
-  maintainAspectRatio: true,
-  animation: false,
-  plugins: {
-    legend: {
-      position: 'upper-right',
-      align: 'end',
-      labels: { font: { size: 11 }, boxWidth: 20, padding: 12 }
-    }
-  },
-  scales: {
-    x: {
-      type: 'linear',
-      title: { ...AXIS_TITLE, text: 'Distância ao TLOF (m)' },
-      grid: GRID_STYLE,
-      border: { display: false }
-    },
-    y: {
-      title: { ...AXIS_TITLE, text: 'Altitude (m)' },
-      grid: GRID_STYLE,
-      border: { display: false }
-    }
-  }
-};
-
-function profileChart(canvasId, easaData, faaData, figNum, degrees) {
-  // Usa altitude MSL (alt_m) igual ao matplotlib — sem conversão AGL
-  const toMsl = pts => pts.map(p => ({x: p.dist, y: p.alt}));
-  new Chart(document.getElementById(canvasId), {
-    type: 'line',
-    data: {
-      datasets: [
-        {
-          label: 'EASA Subpart 2',
-          data: toMsl(easaData),
-          borderColor: '#9ecae1',
-          backgroundColor: 'rgba(158,202,225,0.10)',
-          borderWidth: 2, pointRadius: 0, fill: false, tension: 0
-        },
-        {
-          label: 'FAA EB-105A',
-          data: toMsl(faaData),
-          borderColor: '#3182bd',
-          backgroundColor: 'rgba(49,130,189,0.10)',
-          borderWidth: 2, pointRadius: 0, fill: false, tension: 0
-        }
-      ]
-    },
-    options: {
-      ...baseOpts,
-      plugins: {
-        ...baseOpts.plugins,
-        title: {
-          display: true,
-          text: `Figura ${figNum} — Perfil de Rampa de Aproximação (Orientação ${degrees}°)`,
-          font: { size: 11, weight: 'bold' },
-          color: '#222',
-          padding: { bottom: 10 }
-        },
-        legend: {
-          position: 'top', align: 'end',
-          labels: { font: { size: 11 }, boxWidth: 20, padding: 12 }
-        }
-      }
-    }
-  });
-}
-
-profileChart('chart0',   EASA_0,   FAA_0,   1, '0');
-profileChart('chart180', EASA_180, FAA_180, 2, '180');
-
-/* ── Upload e parse do STATELOG BlueSky ── */
-let charts = { profile: null, speed: null, ez: null };
-
-function parseStatelog(text) {
-  const allLines = text.split(/\r?\n/);
-
-  // BlueSky escreve o cabeçalho em uma linha "# simt,traf.id,traf.lat,..."
-  // Precisamos varrer TODAS as linhas (inclusive as comentadas) para achar o header.
-  let headerCols = null;
-  let delim = ',';
-
-  for (const line of allLines) {
-    const raw = line.trim();
-    if (!raw) continue;
-    const candidate = raw.replace(/^#+\s*/, ''); // remove # inicial
-    const d = candidate.includes('\t') ? '\t' : ',';
-    const parts = candidate.split(d).map(s =>
-      s.trim().toLowerCase()
-       .replace(/traf\./g, '')   // "traf.alt" → "alt"
-       .replace(/\(.*?\)/g, '')  // "alt(ft)" → "alt"
-       .replace(/\[.*?\]/g, '')  // "lat[0]"  → "lat"
-       .trim()
-    );
-    const hasAlt  = parts.some(p => p === 'alt');
-    const hasDist = parts.some(p => p === 'distflown' || p === 'dist');
-    const hasLat  = parts.some(p => p === 'lat');
-    if (hasAlt && (hasDist || hasLat)) {
-      headerCols = parts;
-      delim = d;
-      break;
-    }
-  }
-
-  if (!headerCols)
-    throw new Error(
-      'Cabeçalho não reconhecido. O arquivo deve ser um STATELOG do BlueSky ' +
-      '(gerado por CRELOG STATELOG + STATELOG ADD traf.alt traf.distflown ...).'
-    );
-
-  const idxOf = (...names) => {
-    for (const name of names) {
-      const i = headerCols.findIndex(h => h === name || h.startsWith(name));
-      if (i >= 0) return i;
-    }
-    return -1;
-  };
-
-  const idxDist = idxOf('distflown', 'dist');
-  const idxAlt  = idxOf('alt');
-  const idxCas  = idxOf('cas');
-  const idxTas  = idxOf('tas');
-  const idxId   = idxOf('id', 'acid');
-
-  if (idxAlt < 0 || idxDist < 0)
-    throw new Error(
-      `Colunas obrigatórias ausentes. Cabeçalho detectado: [${headerCols.join(', ')}]. ` +
-      'Verifique se o STATELOG inclui traf.alt e traf.distflown.'
-    );
-
-  const rows = [];
-  for (const line of allLines) {
-    const raw = line.trim();
-    if (!raw || raw.startsWith('#')) continue;
-    const c = raw.split(delim);
-    // pula linha de cabeçalho sem # (primeiro campo não-numérico e não HH:MM)
-    if (isNaN(parseFloat(c[0])) && !c[0].trim().match(/^\d+[:.]/)) continue;
-    const alt_ft  = parseFloat(c[idxAlt]);
-    const dist_nm = parseFloat(c[idxDist]);
-    if (isNaN(alt_ft) || isNaN(dist_nm)) continue;
-    // Guardar unidades brutas do BlueSky: distflown em metros, alt em pés, vel em kt
-    rows.push({
-      id:     idxId  >= 0 ? c[idxId].trim() : '',
-      dist_m: dist_nm,                                      // metros acumulados desde a origem
-      alt_ft: alt_ft,                                       // pés MSL
-      cas:    idxCas >= 0 ? parseFloat(c[idxCas]) : null,  // kt
-      tas:    idxTas >= 0 ? parseFloat(c[idxTas]) : null,  // kt
-    });
-  }
-  if (!rows.length) throw new Error('Nenhuma linha de dados numéricos encontrada.');
-  return rows;
-}
-
-const NOMINAL_DATASETS = { EASA_0, EASA_180, FAA_0, FAA_180 };
-
-/* Interpola altitude MSL (m) na rampa nominal a partir da distância ao TLOF (m) */
-function nominalAlt(dist_tlof_m) {
-  const key = document.getElementById('refSelect').value;
-  const pts = NOMINAL_DATASETS[key];
-  if (dist_tlof_m <= pts[0].dist) return pts[0].alt;
-  if (dist_tlof_m >= pts[pts.length-1].dist) return pts[pts.length-1].alt;
-  for (let i = 0; i < pts.length - 1; i++) {
-    if (dist_tlof_m >= pts[i].dist && dist_tlof_m <= pts[i+1].dist) {
-      const t = (dist_tlof_m - pts[i].dist) / (pts[i+1].dist - pts[i].dist);
-      return +(pts[i].alt + t * (pts[i+1].alt - pts[i].alt)).toFixed(3);
-    }
-  }
-  return pts[pts.length-1].alt;
-}
-
-function renderStatelog(rows) {
-  Object.values(charts).forEach(c => c && c.destroy());
-
-  /* ── Transformação de unidades BlueSky ──────────────────────────────────
-     traf.distflown: nm acumulados desde a origem (SBGR → SJC ≈ 108 nm)
-     dist_tlof = (max_dist_nm − dist_nm) × 1852
-       → 0 m no toque no TLOF, aumenta voltando pela rampa de aproximação
-     traf.alt: pés MSL  →  alt_m = alt_ft × 0.3048
-  ─────────────────────────────────────────────────────────────────────── */
-  // traf.distflown = metros acumulados desde a origem
-  // dist_tlof = maxDist_m − dist_m  →  0 m no TLOF, aumenta voltando pela rampa
-  const maxDist_m = rows.reduce((m, r) => r.dist_m > m ? r.dist_m : m, rows[0].dist_m);
-
-  const enriched = rows.map(r => ({
-    dist_tlof: +(maxDist_m - r.dist_m).toFixed(1), // m do TLOF (sem conversão adicional)
-    alt_m:     +(r.alt_ft * 0.3048).toFixed(3),     // pés → metros MSL
-    cas:       r.cas,
-    tas:       r.tas,
-    dist_m:    r.dist_m,
-  }));
-
-  // Segmento de aproximação: dist_tlof ≤ 1 500 m (cobre rampa EASA 1010 m)
-  const RAMP_WINDOW = 1500;
-  const approach = enriched
-    .filter(r => r.dist_tlof <= RAMP_WINDOW)
-    .sort((a, b) => a.dist_tlof - b.dist_tlof);
-
-  const simData = approach.map(r => ({x: r.dist_tlof, y: r.alt_m}));
-  const refKey  = document.getElementById('refSelect').value;
-  const nomData = NOMINAL_DATASETS[refKey].map(p => ({x: p.dist, y: p.alt}));
-
-  const ezData = approach.map(r => ({
-    x: r.dist_tlof,
-    y: +(r.alt_m - nominalAlt(r.dist_tlof)).toFixed(3)
-  }));
-
-  // Velocidade: voo completo ordenado por dist_m crescente (= ordem temporal)
-  const fullFlight = [...enriched].sort((a, b) => a.dist_m - b.dist_m);
-  const casData = fullFlight.filter(r => r.cas !== null)
-    .map(r => ({x: +(r.dist_m / 1000).toFixed(2), y: r.cas}));  // m → km
-  const tasData = fullFlight.filter(r => r.tas !== null)
-    .map(r => ({x: +(r.dist_m / 1000).toFixed(2), y: r.tas}));
-
-  const approachOpts = (yLabel) => ({
-    ...baseOpts,
-    scales: {
-      x: { type:'linear', title:{ ...AXIS_TITLE, text:'Distância ao TLOF (m)' }, grid: GRID_STYLE, border:{ display:false } },
-      y: { title:{ ...AXIS_TITLE, text: yLabel }, grid: GRID_STYLE, border:{ display:false } }
-    }
-  });
-  const speedOpts = {
-    ...baseOpts,
-    scales: {
-      x: { type:'linear', title:{ ...AXIS_TITLE, text:'Distância percorrida (km)' }, grid: GRID_STYLE, border:{ display:false } },
-      y: { title:{ ...AXIS_TITLE, text:'Velocidade (kt)' }, grid: GRID_STYLE, border:{ display:false } }
-    }
-  };
-
-  charts.profile = new Chart(document.getElementById('chart-statelog-profile'), {
-    type: 'line',
-    data: {
-      datasets: [
-        { label: 'Simulado (BlueSky)', data: simData, borderColor: '#6baed6', borderWidth: 2, pointRadius: 0, fill: false, tension: 0 },
-        { label: `Nominal ${refKey.replace('_', ' ')}`, data: nomData, borderColor: '#9ecae1', borderDash:[5,4], borderWidth:1.5, pointRadius:0, fill:false, tension:0 }
-      ]
-    },
-    options: approachOpts('Altitude (m)')
-  });
-
-  charts.speed = new Chart(document.getElementById('chart-statelog-speed'), {
-    type: 'line',
-    data: {
-      datasets: [
-        { label: 'CAS (kt)', data: casData, borderColor: '#3182bd', borderWidth: 2, pointRadius: 0, fill: false },
-        { label: 'TAS (kt)', data: tasData, borderColor: '#9ecae1', borderWidth: 2, pointRadius: 0, fill: false }
-      ]
-    },
-    options: speedOpts
-  });
-
-  charts.ez = new Chart(document.getElementById('chart-statelog-ez'), {
-    type: 'line',
-    data: {
-      datasets: [{
-        label: 'e_z (m)',
-        data: ezData,
-        borderColor: '#08519c', backgroundColor: 'rgba(49,130,189,0.12)',
-        borderWidth: 1.8, pointRadius: 0, fill: true, tension: 0
-      }]
-    },
-    options: approachOpts('e_z = simulado − nominal (m)')
-  });
-
-  document.getElementById('statelog-charts').style.display = 'block';
-}
-
-function handleFile(file) {
-  const info = document.getElementById('statelog-info');
-  info.style.display = 'block';
-  info.className = '';
-  info.textContent = `Lendo ${file.name}…`;
-  const reader = new FileReader();
-  reader.onload = e => {
-    try {
-      const rows = parseStatelog(e.target.result);
-      const ids  = [...new Set(rows.map(r => r.id).filter(Boolean))];
-      info.className = 'ok';
-      info.innerHTML = `&#10003; <strong>${file.name}</strong> — ${rows.length.toLocaleString()} amostras` +
-        (ids.length ? ` | aeronave: ${ids.join(', ')}` : '');
-      renderStatelog(rows);
-    } catch (err) {
-      info.className = 'err';
-      info.textContent = `Erro: ${err.message}`;
-    }
-  };
-  reader.readAsText(file, 'utf-8');
-}
-
-document.getElementById('fileInput').addEventListener('change', e => {
-  if (e.target.files[0]) handleFile(e.target.files[0]);
-});
-const dz = document.getElementById('dropzone');
-dz.addEventListener('dragover',  e => { e.preventDefault(); dz.classList.add('drag'); });
-dz.addEventListener('dragleave', () => dz.classList.remove('drag'));
-dz.addEventListener('drop', e => {
-  e.preventDefault(); dz.classList.remove('drag');
-  if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
-});
-</script>
 </body>
 </html>
