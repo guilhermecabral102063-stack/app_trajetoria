@@ -1,0 +1,330 @@
+/* ── Variáveis de cor (SandBox palette) ───────────────────────────────────── */
+:root {
+  --bg:     #ffffff;
+  --soft:   #f7f9fb;
+  --paper:  #ffffff;
+  --ink:    #182236;
+  --muted:  #526078;
+  --quiet:  #7c8799;
+  --line:   #dfe6ee;
+  --nav:    #111a2e;
+  --accent: #6f7f97;
+}
+
+/* ── Reset / base ─────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body, #root {
+  min-height: 100%;
+  margin: 0 !important;
+  padding: 0;
+  background: var(--bg) !important;
+  color: var(--ink) !important;
+  font-family: Inter, "Segoe UI", system-ui, sans-serif !important;
+  font-size: 14px;
+}
+
+/* ── Suprime margens padrão do Taipy ─────────────────────────────────────── */
+.taipy-part,
+.taipy-layout,
+.taipy-content {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* ── Shell ────────────────────────────────────────────────────────────────── */
+.taipy-part.app-shell {
+  min-height: 100vh;
+  background: var(--bg);
+}
+
+/* ── Layout grid: sidebar 260px | content ────────────────────────────────── */
+.taipy-layout.app-layout {
+  display: grid !important;
+  grid-template-columns: 260px 1fr;
+  min-height: 100vh;
+  align-items: start;
+}
+
+/* ── Sidebar ──────────────────────────────────────────────────────────────── */
+.taipy-part.sidebar {
+  position: sticky;
+  top: 0;
+  align-self: start;
+  min-height: 100vh;
+  height: 100vh;
+  padding: 28px 18px;
+  background: #ffffff;
+  border-right: 1px solid var(--line);
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
+/* ── Brand / título dentro da sidebar ────────────────────────────────────── */
+.taipy-part.sidebar-brand {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--quiet);
+  margin-bottom: 14px;
+  padding: 0;
+}
+
+.taipy-part.sidebar-title {
+  font-size: 1.08rem;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.2;
+  margin-bottom: 5px;
+  padding: 0;
+}
+
+.taipy-part.sidebar-sub {
+  font-size: 0.88rem;
+  color: var(--quiet);
+  line-height: 1.35;
+  margin-bottom: 30px;
+  padding: 0;
+}
+
+/* ── Navegação lateral ────────────────────────────────────────────────────── */
+.taipy-part.sidebar-nav {
+  display: grid;
+  gap: 6px;
+  padding: 0;
+}
+
+.taipy-part.sidebar-nav a,
+.nav-link {
+  display: block;
+  padding: 10px 13px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  color: var(--muted);
+  font-size: 0.92rem;
+  text-decoration: none;
+  line-height: 1.2;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.taipy-part.sidebar-nav a:hover,
+.nav-link:hover {
+  background: var(--soft);
+  border-color: var(--line);
+  color: var(--ink);
+}
+
+.taipy-part.sidebar-nav a.active,
+.nav-link.active {
+  background: var(--nav);
+  color: #fff;
+  font-weight: 700;
+}
+
+/* ── Área de conteúdo ─────────────────────────────────────────────────────── */
+.taipy-part.content-area {
+  min-width: 0;
+  padding: 26px 42px 56px;
+  background: var(--bg);
+}
+
+/* ── Topbar ───────────────────────────────────────────────────────────────── */
+.taipy-part.topbar {
+  display: flex;
+  align-items: baseline;
+  gap: 18px;
+  margin-bottom: 28px;
+  padding: 0;
+}
+
+.topbar-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.topbar-note {
+  font-size: 0.85rem;
+  color: var(--quiet);
+}
+
+/* ── Título de seção ──────────────────────────────────────────────────────── */
+.section-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--quiet);
+  margin-bottom: 12px;
+  margin-top: 10px;
+}
+
+/* ── Cards ────────────────────────────────────────────────────────────────── */
+.hero-card,
+.feature-card,
+.info-card,
+.reference-card {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 24px;
+}
+
+.hero-card      { padding: 24px 28px; margin-bottom: 24px; }
+.feature-card   { padding: 22px 24px; margin-bottom: 18px; }
+.reference-card { padding: 22px 24px; margin-bottom: 18px; }
+
+/* ── Cards grid (4 colunas) ───────────────────────────────────────────────── */
+.taipy-layout.cards-grid {
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.info-card { padding: 18px 20px; text-align: center; }
+
+.info-card .val {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1;
+}
+
+.info-card .val.pending { color: #c0392b; }
+
+.info-card .lbl {
+  font-size: 0.82rem;
+  color: var(--quiet);
+  margin-top: 6px;
+}
+
+/* ── Pipeline ─────────────────────────────────────────────────────────────── */
+.pipeline {
+  display: flex;
+  gap: 0;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.pipeline-step {
+  flex: 1;
+  padding: 14px 16px;
+  background: var(--soft);
+  text-align: center;
+  border-right: 1px solid var(--line);
+}
+
+.pipeline-step:last-child { border-right: none; }
+
+.pipeline-step .num {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--line);
+  line-height: 1;
+}
+
+.pipeline-step .label { font-size: 0.78rem; color: var(--quiet); margin-top: 4px; }
+
+.pipeline-step .badge {
+  display: inline-block;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 4px;
+  margin-top: 6px;
+}
+
+.step-done   { background: #f0faf0; }
+.step-done   .num   { color: #27ae60; }
+.step-done   .badge { background: #d4edda; color: #155724; }
+
+.step-active { background: #f0f5ff; }
+.step-active .num   { color: #2171b5; }
+.step-active .badge { background: #cfe2ff; color: #0a2e6e; }
+
+.step-pending .badge { background: #e8eaf0; color: var(--quiet); }
+
+/* ── Tabela ───────────────────────────────────────────────────────────────── */
+.table-wrap { overflow-x: auto; }
+
+table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+
+th {
+  background: var(--nav);
+  color: #fff;
+  padding: 9px 12px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+}
+
+th:first-child { border-radius: 8px 0 0 8px; }
+th:last-child  { border-radius: 0 8px 8px 0; }
+
+td {
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  vertical-align: middle;
+}
+
+tr:last-child td { border-bottom: none; }
+tr:hover td      { background: var(--soft); }
+
+/* ── Tags / badges de tabela ──────────────────────────────────────────────── */
+.tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.tag-easa  { background: #dbeafe; color: #1e3a8a; }
+.tag-faa   { background: #e0e7ff; color: #312e81; }
+.tag-peres { background: #f1f5f9; color: var(--muted); }
+.tag-ok    { background: #dcfce7; color: #166534; }
+.tag-wait  { background: #fef9c3; color: #713f12; }
+.tag-no    { background: #fee2e2; color: #991b1b; }
+
+/* ── Selector de trajetória (Taipy) ───────────────────────────────────────── */
+.taipy-selector {
+  margin-bottom: 18px;
+}
+
+/* ── Plotly chart containers ──────────────────────────────────────────────── */
+.taipy-chart {
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+/* ── Responsivo ───────────────────────────────────────────────────────────── */
+@media (max-width: 960px) {
+  .taipy-layout.app-layout {
+    grid-template-columns: 1fr !important;
+  }
+
+  .taipy-part.sidebar {
+    position: static;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .taipy-layout.cards-grid {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  .pipeline { flex-direction: column; border-radius: 14px; }
+  .pipeline-step { border-right: none; border-bottom: 1px solid var(--line); }
+  .pipeline-step:last-child { border-bottom: none; }
+
+  .taipy-part.content-area {
+    padding: 20px !important;
+  }
+}
