@@ -1,6 +1,6 @@
 # app-trajetoria
 
-Aplicativo de Trajetória — módulo do Gêmeo Digital do Vertiporto de São José dos Campos (SJC/SBSJ).
+Aplicativo de Trajetória — Simulador de Trajetória do Vertiporto de São José dos Campos (SJC/SBSJ).
 
 ## Objetivo
 
