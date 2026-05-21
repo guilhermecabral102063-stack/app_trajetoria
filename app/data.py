@@ -22,12 +22,9 @@ STEP_S    = 5.0
 FT_TO_M   = 0.3048
 
 # ── Localização dos logs ───────────────────────────────────────────────────────
-_EASA_OUT = pathlib.Path(
-    r"C:\Users\Guilherme Cabral\Desktop\Projeto - Vertimob\Bluesky\Scenarios\EASA\Outputs"
-)
-_FAA_OUT = pathlib.Path(
-    r"C:\Users\Guilherme Cabral\Desktop\Projeto - Vertimob\Bluesky\Scenarios\FAA\output"
-)
+_APP_DIR  = pathlib.Path(__file__).resolve().parent
+_EASA_OUT = _APP_DIR / "logs" / "EASA"
+_FAA_OUT  = _APP_DIR / "logs" / "FAA"
 
 _LOG_SPECS = [
     (_EASA_OUT / "STATELOG_scenario_EASA_R1_0_SBGR_SJK_20260521_15-04-25.log",
