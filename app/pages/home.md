@@ -1,22 +1,22 @@
-<|part|class_name=app-shell|>
+<|part|class_name=app-shell|
 
-<|layout|columns=260px 1fr|class_name=app-layout|>
+<|layout|columns=260px 1fr|class_name=app-layout|
 
-<|part|class_name=sidebar|>
+<|part|class_name=sidebar|
 
-<|part|class_name=sidebar-brand|>
+<|part|class_name=sidebar-brand|
 VertiMob · ITA · ANAC
 |>
 
-<|part|class_name=sidebar-title|>
+<|part|class_name=sidebar-title|
 Trajetória eVTOL
 |>
 
-<|part|class_name=sidebar-sub|>
+<|part|class_name=sidebar-sub|
 Vertiporto SJC/SBSJ — Sandbox Regulatório
 |>
 
-<|part|class_name=sidebar-nav|>
+<|part|class_name=sidebar-nav|
 [Pipeline](#pipeline)
 
 [Estado Atual](#estado)
@@ -28,9 +28,9 @@ Vertiporto SJC/SBSJ — Sandbox Regulatório
 
 |>
 
-<|part|class_name=content-area|>
+<|part|class_name=content-area|
 
-<|part|class_name=topbar|>
+<|part|class_name=topbar|
 <span class="topbar-title">Desvios de Trajetória de Pouso — eVTOL SBSJ</span>
 <span class="topbar-note">EASA Subpart 2 vs. FAA EB-105A · Simulação BlueSky (TU Delft, GPL v3)</span>
 |>
@@ -73,7 +73,7 @@ Vertiporto SJC/SBSJ — Sandbox Regulatório
 
 <div class="section-title">Estado Atual</div>
 
-<|layout|columns=1fr 1fr 1fr 1fr|class_name=cards-grid|>
+<|layout|columns=1fr 1fr 1fr 1fr|class_name=cards-grid|
 
 <div class="info-card">
   <div class="val">8</div>
@@ -120,72 +120,63 @@ Vertiporto SJC/SBSJ — Sandbox Regulatório
       </thead>
       <tbody>
         <tr>
-          <td>1</td>
-          <td><span class="tag tag-easa">EASA Subpart 2</span></td>
+          <td>1</td><td><span class="tag tag-easa">EASA Subpart 2</span></td>
           <td>R1</td><td>0°</td><td>SBGR → SJK</td>
           <td>1 010</td><td>152,0</td><td>12,5%</td>
           <td><span class="tag tag-ok">Criado</span></td>
           <td><span class="tag tag-ok">Executado</span></td>
         </tr>
         <tr>
-          <td>2</td>
-          <td><span class="tag tag-easa">EASA Subpart 2</span></td>
+          <td>2</td><td><span class="tag tag-easa">EASA Subpart 2</span></td>
           <td>R1</td><td>0°</td><td>Taubaté → SJK</td>
           <td>1 010</td><td>152,0</td><td>12,5%</td>
           <td><span class="tag tag-ok">Criado</span></td>
           <td><span class="tag tag-ok">Executado</span></td>
         </tr>
         <tr>
-          <td>3</td>
-          <td><span class="tag tag-easa">EASA Subpart 2</span></td>
+          <td>3</td><td><span class="tag tag-easa">EASA Subpart 2</span></td>
           <td>R2</td><td>180°</td><td>SBGR → SJK</td>
           <td>1 010</td><td>152,0</td><td>12,5%</td>
           <td><span class="tag tag-ok">Criado</span></td>
           <td><span class="tag tag-ok">Executado</span></td>
         </tr>
         <tr>
-          <td>4</td>
-          <td><span class="tag tag-easa">EASA Subpart 2</span></td>
+          <td>4</td><td><span class="tag tag-easa">EASA Subpart 2</span></td>
           <td>R2</td><td>180°</td><td>Taubaté → SJK</td>
           <td>1 010</td><td>152,0</td><td>12,5%</td>
           <td><span class="tag tag-ok">Criado</span></td>
           <td><span class="tag tag-ok">Executado</span></td>
         </tr>
         <tr>
-          <td>5</td>
-          <td><span class="tag tag-faa">FAA EB-105A</span></td>
+          <td>5</td><td><span class="tag tag-faa">FAA EB-105A</span></td>
           <td>R1</td><td>0°</td><td>SBGR → SJK</td>
           <td>602,8</td><td>73,5</td><td>12,5%</td>
           <td><span class="tag tag-ok">Criado</span></td>
           <td><span class="tag tag-ok">Executado</span></td>
         </tr>
         <tr>
-          <td>6</td>
-          <td><span class="tag tag-faa">FAA EB-105A</span></td>
+          <td>6</td><td><span class="tag tag-faa">FAA EB-105A</span></td>
           <td>R1</td><td>0°</td><td>Taubaté → SJK</td>
           <td>602,8</td><td>73,5</td><td>12,5%</td>
           <td><span class="tag tag-ok">Criado</span></td>
           <td><span class="tag tag-wait">Pendente</span></td>
         </tr>
         <tr>
-          <td>7</td>
-          <td><span class="tag tag-faa">FAA EB-105A</span></td>
+          <td>7</td><td><span class="tag tag-faa">FAA EB-105A</span></td>
           <td>R2</td><td>180°</td><td>SBGR → SJK</td>
           <td>602,8</td><td>73,5</td><td>12,5%</td>
           <td><span class="tag tag-ok">Criado</span></td>
           <td><span class="tag tag-ok">Executado</span></td>
         </tr>
         <tr>
-          <td>8</td>
-          <td><span class="tag tag-faa">FAA EB-105A</span></td>
+          <td>8</td><td><span class="tag tag-faa">FAA EB-105A</span></td>
           <td>R2</td><td>180°</td><td>Taubaté → SJK</td>
           <td>602,8</td><td>73,5</td><td>12,5%</td>
           <td><span class="tag tag-ok">Criado</span></td>
           <td><span class="tag tag-wait">Pendente</span></td>
         </tr>
         <tr>
-          <td>9–12</td>
-          <td><span class="tag tag-peres">Peres (legado)</span></td>
+          <td>9–12</td><td><span class="tag tag-peres">Peres (legado)</span></td>
           <td>VAC SBSJ</td><td>Var.</td><td>Var.</td>
           <td>—</td><td>—</td><td>—</td>
           <td><span class="tag tag-ok">Criado</span></td>
@@ -198,17 +189,51 @@ Vertiporto SJC/SBSJ — Sandbox Regulatório
 
 <a id="trajetorias"></a>
 
-<div class="section-title">Trajetórias 3D — Abordagem Final</div>
+<div class="section-title">Trajetórias — Abordagem Final</div>
 
-<div class="reference-card" style="padding:24px 28px;">
+<|part|class_name=reference-card traj-card|
 
-<|{selected_traj_idx}|selector|lov={traj_labels}|on_change=on_traj_change|dropdown=False|>
+<|part|class_name=traj-selector|
+<|EASA · R1 · 0° — SBGR → SJK|button|on_action=sel_0|class_name={pill_0}|>
+<|EASA · R2 · 180° — SBGR → SJK|button|on_action=sel_1|class_name={pill_1}|>
+<|EASA · R1 · 0° — Taubaté → SJK|button|on_action=sel_2|class_name={pill_2}|>
+<|EASA · R2 · 180° — Taubaté → SJK|button|on_action=sel_3|class_name={pill_3}|>
+<|FAA · R1 · 0° — SBGR → SJK|button|on_action=sel_4|class_name={pill_4}|>
+<|FAA · R2 · 180° — SBGR → SJK|button|on_action=sel_5|class_name={pill_5}|>
+|>
 
-<|{map_fig}|chart|>
+<|layout|columns=2fr 1fr|class_name=traj-layout|
 
-<|{profile_fig}|chart|>
+<|part|
 
+<|layout|columns=1fr auto|class_name=chart-header-row|
+<div class="chart-label" style="margin-bottom:0;">Trajetória de Aproximação</div>
+<|{map_toggle_lbl}|button|on_action=toggle_map_style|class_name=map-toggle-btn|>
+|>
+<|chart|figure={map_fig}|>
+<div class="chart-label" style="margin-top:16px;">Perfil de Altitude AGL</div>
+<|chart|figure={profile_fig}|>
+
+|>
+
+<|part|
+
+<div class="chart-label">Vista FATO/TLOF — SJC/SBSJ</div>
+<|chart|figure={fato_fig}|>
+<div class="fato-info">
+  <strong>FATO/TLOF — Ponto de Toque</strong><br/>
+  Sim. O marcador vermelho indica a coordenada exata de pouso do eVTOL. O STATELOG BlueSky confirma alt = 0 ft AGL nessa posição ao final de cada simulação.<br/><br/>
+  Lat: −23.231441°<br/>
+  Lon: −45.862719°<br/>
+  Alt MSL: 639,5 m<br/>
+  Alt BlueSky (flat-earth): 0 ft AGL
 </div>
+
+|>
+
+|>
+
+|>
 
 |>
 

@@ -63,7 +63,7 @@ def _haversine_m(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
 def _load_traj(path: pathlib.Path, tid: str, reg: str,
                config: str, orient: str, route: str) -> dict:
     """Lê um STATELOG e retorna dicionário de trajetória filtrado/subsampled."""
-    lats, lons, alts_m = [], [], []
+    lats, lons, alts_m, alts_ft = [], [], [], []
     last_t = -9999.0
 
     with open(path, encoding="utf-8") as fh:
@@ -91,7 +91,9 @@ def _load_traj(path: pathlib.Path, tid: str, reg: str,
             last_t = t
             lats.append(lat)
             lons.append(lon)
-            alts_m.append(round(alt_ft * FT_TO_M, 1))
+            alt_m = alt_ft          # coluna "alt" do BlueSky está em metros
+            alts_m.append(round(alt_m, 1))
+            alts_ft.append(round(alt_m / FT_TO_M, 1))
 
     # Distância acumulada ao longo do trecho (para perfil)
     dist_tlof_m = []
@@ -118,6 +120,7 @@ def _load_traj(path: pathlib.Path, tid: str, reg: str,
         "lats":        lats,
         "lons":        lons,
         "alts_m":      alts_m,
+        "alts_ft":     alts_ft,
         "dist_tlof_m": dist_tlof_m,
     }
 
@@ -144,7 +147,15 @@ selected_traj_idx: int   = 0
 
 
 # ── Figuras Plotly ─────────────────────────────────────────────────────────────
-def make_map_fig(traj: dict) -> go.Figure:
+_ESRI_SATELLITE = (
+    "https://server.arcgisonline.com/ArcGIS/rest/services/"
+    "World_Imagery/MapServer/tile/{z}/{y}/{x}"
+)
+
+_FONT = dict(family="Inter, Segoe UI, system-ui, sans-serif", size=11, color="#526078")
+
+
+def make_map_fig(traj: dict, satellite: bool = True) -> go.Figure:
     color = "#2563eb" if traj["reg"] == "EASA" else "#7c3aed"
     fig = go.Figure()
     if traj["lats"]:
@@ -154,28 +165,90 @@ def make_map_fig(traj: dict) -> go.Figure:
             line=dict(width=3, color=color),
             name=traj["label"],
         ))
+    if traj["lats"]:
+        fig.add_trace(go.Scattermapbox(
+            lat=traj["lats"], lon=traj["lons"],
+            mode="markers",
+            marker=dict(
+                size=5,
+                color=traj["alts_ft"],
+                colorscale="Blues",
+                cmin=0,
+                cmax=max(traj["alts_ft"]) if traj["alts_ft"] else 500,
+                showscale=False,
+            ),
+            hovertemplate="Alt: %{marker.color:.0f} ft<extra></extra>",
+            showlegend=False,
+        ))
     fig.add_trace(go.Scattermapbox(
         lat=[TLOF_LAT], lon=[TLOF_LON],
-        mode="markers",
-        marker=dict(size=12, color="#e53e3e"),
-        name="TLOF/FATO",
+        mode="markers+text",
+        marker=dict(size=14, color="#e53e3e"),
+        text=["FATO/TLOF"],
+        textposition="top right",
+        textfont=dict(size=11, color="#ffffff"),
+        name="FATO/TLOF",
+        hovertemplate="FATO/TLOF — SJC/SBSJ<extra></extra>",
+    ))
+    if satellite:
+        mapbox_cfg = dict(
+            style="white-bg",
+            center=dict(lat=TLOF_LAT, lon=TLOF_LON),
+            zoom=12,
+            layers=[dict(below="traces", sourcetype="raster", source=[_ESRI_SATELLITE])],
+        )
+    else:
+        mapbox_cfg = dict(
+            style="carto-positron",
+            center=dict(lat=TLOF_LAT, lon=TLOF_LON),
+            zoom=12,
+        )
+    fig.update_layout(
+        mapbox=mapbox_cfg,
+        margin=dict(l=0, r=0, t=0, b=0),
+        height=440,
+        paper_bgcolor="#ffffff",
+        font=_FONT,
+        legend=dict(
+            x=0.01, y=0.99,
+            bgcolor="rgba(0,0,0,0.55)",
+            bordercolor="rgba(255,255,255,0.2)",
+            borderwidth=1,
+            font=dict(color="#ffffff", size=11),
+        ),
+    )
+    return fig
+
+
+def make_fato_fig() -> go.Figure:
+    """Vista aproximada do FATO/TLOF com tiles de satélite."""
+    fig = go.Figure()
+    fig.add_trace(go.Scattermapbox(
+        lat=[TLOF_LAT], lon=[TLOF_LON],
+        mode="markers+text",
+        marker=dict(size=16, color="#e53e3e", symbol="circle"),
+        text=["FATO/TLOF"],
+        textposition="top right",
+        textfont=dict(size=12, color="#ffffff"),
+        name="FATO/TLOF",
+        hovertemplate="FATO/TLOF<br>Lat: -23.231441°<br>Lon: -45.862719°<extra></extra>",
     ))
     fig.update_layout(
         mapbox=dict(
-            style="open-street-map",
+            style="white-bg",
             center=dict(lat=TLOF_LAT, lon=TLOF_LON),
-            zoom=13,
+            zoom=16,
+            layers=[dict(
+                below="traces",
+                sourcetype="raster",
+                source=[_ESRI_SATELLITE],
+            )],
         ),
         margin=dict(l=0, r=0, t=0, b=0),
-        height=420,
+        height=300,
         paper_bgcolor="#ffffff",
-        font=dict(family="Inter", color="#526078"),
-        legend=dict(
-            x=0.01, y=0.99,
-            bgcolor="rgba(255,255,255,0.85)",
-            bordercolor="#dfe6ee",
-            borderwidth=1,
-        ),
+        font=_FONT,
+        showlegend=False,
     )
     return fig
 
@@ -184,20 +257,24 @@ def make_profile_fig(traj: dict) -> go.Figure:
     color = "#2563eb" if traj["reg"] == "EASA" else "#7c3aed"
     fig = go.Figure()
     if traj["dist_tlof_m"]:
+        dist_km = [v / 1000 for v in traj["dist_tlof_m"]]
         fig.add_trace(go.Scatter(
-            x=traj["dist_tlof_m"],
-            y=traj["alts_m"],
+            x=dist_km,
+            y=traj["alts_ft"],
             mode="lines",
             line=dict(width=2, color=color),
+            fill="tozeroy",
+            fillcolor=f"rgba({int(color[1:3],16)},{int(color[3:5],16)},{int(color[5:7],16)},0.08)",
             name=traj["label"],
+            hovertemplate="Dist: %{x:.2f} km<br>Alt: %{y:.0f} ft<extra></extra>",
         ))
     fig.update_layout(
-        xaxis_title="Distância ao TLOF (m)",
-        yaxis_title="Altitude AGL (m)",
+        xaxis=dict(title="Distância percorrida (km)", gridcolor="#dfe6ee", showgrid=True),
+        yaxis=dict(title="Altitude AGL (ft)", gridcolor="#dfe6ee", showgrid=True),
         height=220,
-        margin=dict(l=40, r=20, t=10, b=40),
+        margin=dict(l=50, r=20, t=10, b=40),
         paper_bgcolor="#ffffff",
         plot_bgcolor="#f7f9fb",
-        font=dict(family="Inter", size=11, color="#526078"),
+        font=_FONT,
     )
     return fig

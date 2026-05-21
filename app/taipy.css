@@ -292,9 +292,126 @@ tr:hover td      { background: var(--soft); }
 .tag-wait  { background: #fef9c3; color: #713f12; }
 .tag-no    { background: #fee2e2; color: #991b1b; }
 
-/* ── Selector de trajetória (Taipy) ───────────────────────────────────────── */
-.taipy-selector {
-  margin-bottom: 18px;
+/* ── Pills de trajetória (buttons Taipy) ─────────────────────────────────── */
+.taipy-part.traj-selector {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 8px !important;
+  margin-bottom: 20px !important;
+  padding: 0 !important;
+}
+/* Base de todos os pills */
+.traj-pill.MuiButton-root,
+.traj-pill.MuiButtonBase-root {
+  border-radius: 20px !important;
+  padding: 6px 16px !important;
+  font-size: 0.82rem !important;
+  font-weight: 600 !important;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+  font-family: inherit !important;
+  box-shadow: none !important;
+  min-width: 0 !important;
+  line-height: 1.35 !important;
+  transition: background 0.15s, border-color 0.15s, color 0.15s !important;
+}
+/* EASA inativo */
+.pill-easa.MuiButton-root {
+  border: 1px solid #93c5fd !important;
+  background: #f0f7ff !important;
+  color: #3b6ea5 !important;
+}
+/* FAA inativo */
+.pill-faa.MuiButton-root {
+  border: 1px solid #c4b5fd !important;
+  background: #f5f3ff !important;
+  color: #6d4c9e !important;
+}
+/* EASA ativo */
+.pill-easa.active-pill.MuiButton-root {
+  background: #1e3a8a !important;
+  border-color: #1e3a8a !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+}
+/* FAA ativo */
+.pill-faa.active-pill.MuiButton-root {
+  background: #4c1d95 !important;
+  border-color: #4c1d95 !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+}
+
+/* ── Layout da seção de trajetórias ──────────────────────────────────────── */
+.taipy-part.traj-card  { padding: 24px 28px; }
+.taipy-layout.traj-layout { gap: 20px; align-items: start; margin-top: 4px; }
+
+/* ── Labels de gráfico ───────────────────────────────────────────────────── */
+.chart-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--quiet);
+  margin-bottom: 6px;
+}
+
+/* ── Caixa de info do FATO ───────────────────────────────────────────────── */
+.fato-info {
+  margin-top: 14px;
+  padding: 14px 16px;
+  background: var(--soft);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  font-size: 0.83rem;
+  color: var(--muted);
+  line-height: 1.7;
+}
+.fato-info strong { color: var(--ink); }
+
+/* ── Cards de estado atual (val / lbl) ───────────────────────────────────── */
+.val {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1;
+}
+.val.pending { color: #c0392b; }
+.lbl {
+  font-size: 0.82rem;
+  color: var(--quiet);
+  margin-top: 6px;
+}
+
+/* ── Cabeçalho do gráfico de mapa (label + botão de estilo) ─────────────── */
+.taipy-layout.chart-header-row {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  margin-bottom: 6px !important;
+  gap: 10px !important;
+}
+
+.map-toggle-btn.MuiButton-root,
+.map-toggle-btn.MuiButtonBase-root {
+  padding: 3px 12px !important;
+  font-size: 0.75rem !important;
+  font-weight: 600 !important;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+  font-family: inherit !important;
+  box-shadow: none !important;
+  border-radius: 8px !important;
+  border: 1px solid var(--line) !important;
+  background: var(--soft) !important;
+  color: var(--muted) !important;
+  min-width: 0 !important;
+  line-height: 1.5 !important;
+}
+
+.map-toggle-btn.MuiButton-root:hover {
+  background: var(--line) !important;
+  color: var(--ink) !important;
 }
 
 /* ── Plotly chart containers ──────────────────────────────────────────────── */
@@ -328,3 +445,5 @@ tr:hover td      { background: var(--soft); }
     padding: 20px !important;
   }
 }
+
+.taipy-part.traj-card { padding: 24px 28px; }
