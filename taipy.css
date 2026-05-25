@@ -1,0 +1,250 @@
+/* ── Base: app_taipy (Dash Meteoro) ───────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/icon?family=Material+Icons');
+
+/* ── Menu lateral (Material UI) ──────────────────────────────────────────── */
+
+.taipy-menu .Mui-selected,
+.taipy-menu .Mui-selected:hover {
+  background-color: #e3f2fd !important;
+}
+
+.taipy-menu .MuiAvatar-root,
+.taipy-menu [class*="MuiAvatar-root"] {
+  background-color: #f7fafb !important;
+  border: 1px solid #d8e4e8 !important;
+  border-radius: 8px !important;
+  box-shadow: none !important;
+  height: 40px !important;
+  width: 40px !important;
+}
+
+.taipy-menu .MuiAvatar-img,
+.taipy-menu [class*="MuiAvatar-img"] {
+  object-fit: contain !important;
+  height: 24px !important;
+  width: 24px !important;
+}
+
+.taipy-menu .MuiSvgIcon-root,
+.taipy-menu [class*="MuiSvgIcon-root"] {
+  color: #2f3a3d !important;
+  opacity: 1 !important;
+}
+
+/* ── Layout de página ─────────────────────────────────────────────────────── */
+
+.page-content {
+  box-sizing: border-box;
+  max-width: 1040px;
+  padding: 32px 48px 56px 56px;
+}
+
+.page-content-wide {
+  box-sizing: border-box;
+  max-width: none;
+  padding: 32px 32px 56px 56px;
+  width: calc(100vw - 88px);
+}
+
+.page-content h1,
+.page-content-wide h1 {
+  color: #11181c;
+  font-size: 2rem;
+  font-weight: 720;
+  letter-spacing: 0;
+  line-height: 1.18;
+  margin: 0 0 20px;
+}
+
+/* ── Tabela editorial HTML ────────────────────────────────────────────────── */
+
+.html-table-panel {
+  box-sizing: border-box;
+  margin-top: 8px;
+  max-width: 100%;
+  overflow-x: auto;
+  width: 100%;
+}
+
+.html-data-table {
+  border-collapse: collapse;
+  color: #11181c;
+  font-size: 0.95rem;
+  line-height: 1.45;
+  width: 100%;
+}
+
+.html-data-table th {
+  background: #ffffff;
+  border-bottom: 1px solid #dbe4e8;
+  color: #11181c;
+  font-weight: 650;
+  padding: 12px 16px;
+  position: sticky;
+  text-align: left;
+  top: 0;
+  vertical-align: bottom;
+  z-index: 1;
+}
+
+.html-data-table td {
+  border-bottom: 1px solid #edf2f4;
+  padding: 12px 16px;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.html-data-table tbody tr:nth-child(odd)  { background: #f7fafb; }
+.html-data-table tbody tr:nth-child(even) { background: #ffffff; }
+.html-data-table tbody tr:hover           { background: #eef6fb; }
+
+.html-data-table .cell-mono  { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
+.html-data-table .cell-short { white-space: nowrap; }
+.html-data-table .cell-main  { min-width: 18rem; }
+.html-data-table .cell-muted { color: #314148; }
+
+.empty-state { color: #617178; font-style: italic; }
+
+/* ── Painel de controle (map toggle) ──────────────────────────────────────── */
+
+.tr-control-panel {
+  display: flex;
+  align-items: flex-end;
+  padding-bottom: 4px;
+}
+
+/* ── Botão plain ─────────────────────────────────────────────────────────── */
+
+.plain.taipy-button,
+.plain.MuiButton-root {
+  background: #f0f4f7;
+  border: 1px solid #c8d3dc !important;
+  border-radius: 6px !important;
+  color: #11181c !important;
+  font-size: 0.88rem !important;
+  padding: 6px 14px !important;
+  text-transform: none !important;
+  box-shadow: none !important;
+  font-family: inherit !important;
+  letter-spacing: 0 !important;
+}
+
+.plain.MuiButton-root:hover {
+  background: #e3edf5 !important;
+}
+
+/* ── Tags / badges normativos ─────────────────────────────────────────────── */
+
+.tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.tag-easa  { background: #dbeafe; color: #1e3a8a; }
+.tag-faa   { background: #e0e7ff; color: #312e81; }
+.tag-ok    { background: #dcfce7; color: #166534; }
+.tag-wait  { background: #fef9c3; color: #713f12; }
+
+/* ── Seletor de trajetória (pills) ────────────────────────────────────────── */
+
+.taipy-part.traj-selector {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 8px !important;
+  margin-bottom: 20px !important;
+  padding: 0 !important;
+}
+
+.traj-pill.MuiButton-root,
+.traj-pill.MuiButtonBase-root {
+  border-radius: 20px !important;
+  padding: 6px 16px !important;
+  font-size: 0.82rem !important;
+  font-weight: 600 !important;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+  font-family: inherit !important;
+  box-shadow: none !important;
+  min-width: 0 !important;
+  line-height: 1.35 !important;
+  transition: background 0.15s, border-color 0.15s, color 0.15s !important;
+}
+
+/* EASA inativo */
+.pill-easa.MuiButton-root {
+  border: 1px solid #93c5fd !important;
+  background: #f0f7ff !important;
+  color: #3b6ea5 !important;
+}
+
+/* FAA inativo */
+.pill-faa.MuiButton-root {
+  border: 1px solid #c4b5fd !important;
+  background: #f5f3ff !important;
+  color: #6d4c9e !important;
+}
+
+/* EASA ativo */
+.pill-easa.active-pill.MuiButton-root {
+  background: #1e3a8a !important;
+  border-color: #1e3a8a !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+}
+
+/* FAA ativo */
+.pill-faa.active-pill.MuiButton-root {
+  background: #4c1d95 !important;
+  border-color: #4c1d95 !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+}
+
+/* ── Cabeçalho de gráfico (label + toggle) ────────────────────────────────── */
+
+.taipy-layout.chart-header-row {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  margin-bottom: 6px !important;
+  gap: 10px !important;
+}
+
+.map-toggle-btn.MuiButton-root {
+  padding: 3px 12px !important;
+  font-size: 0.75rem !important;
+  font-weight: 600 !important;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+  font-family: inherit !important;
+  box-shadow: none !important;
+  border-radius: 8px !important;
+  border: 1px solid #d8e4e8 !important;
+  background: #f7fafb !important;
+  color: #314148 !important;
+  min-width: 0 !important;
+  line-height: 1.5 !important;
+}
+
+.map-toggle-btn.MuiButton-root:hover {
+  background: #e3edf5 !important;
+}
+
+/* ── Plotly charts ────────────────────────────────────────────────────────── */
+
+.taipy-chart {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* ── Layout de trajetórias ────────────────────────────────────────────────── */
+
+.taipy-layout.traj-layout {
+  gap: 20px;
+  align-items: start;
+  margin-top: 4px;
+}
