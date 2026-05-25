@@ -28,3 +28,18 @@ Thumbs.db
 # Temporários
 *.tmp
 *.log.bak
+
+# Arquivos legados / não pertencentes ao app
+app/
+agents/
+data/logs/FAA/
+pages/page_cenarios/
+pages/page_desvios/
+pages/page_home/
+_build_dashboard.py
+_trajs_data.js
+_trajs_data.json
+dashboard.html
+Dockerfile
+analise_*.md
+relatorio_*.md
