@@ -70,4 +70,5 @@ def toggle_map_style(state: State, *_) -> None:
     state.map_fig = make_map_fig(TRAJS[idx], satellite=state.map_satellite)
 
 
-page_trajetorias = Markdown(str(Path(__file__).parent / "trajetorias.md"))
+_md_path = Path(__file__).parent / "trajetorias.md"
+page_trajetorias = Markdown(_md_path.read_text(encoding="utf-8"))
