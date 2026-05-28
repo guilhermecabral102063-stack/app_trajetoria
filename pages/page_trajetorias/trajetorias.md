@@ -48,6 +48,6 @@
 
 ## Simulação 3D — Mapbox
 
-<|{video_src}|video|width=100%|>
+<|{mapbox_iframe}|html|>
 
 |>
