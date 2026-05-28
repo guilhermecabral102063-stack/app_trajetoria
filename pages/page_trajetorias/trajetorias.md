@@ -46,4 +46,8 @@
 
 <|chart|figure={fato_fig}|>
 
+## Simulação 3D — Mapbox
+
+<|{video_src}|video|width=100%|>
+
 |>
