@@ -19,6 +19,7 @@ from pages.page_trajetorias.trajetorias import (
     pill_0, pill_1, pill_2, pill_3,
     profile_fig,
     sel_0, sel_1, sel_2, sel_3,
+    sel_traj_idx,
     sel_traj_label,
     toggle_map_style,
     traj_labels,

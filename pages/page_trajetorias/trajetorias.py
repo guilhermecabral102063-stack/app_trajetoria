@@ -7,10 +7,6 @@ from taipy.gui import Markdown, State
 from services.figuras import make_fato_fig, make_map_fig, make_profile_fig
 from services.leitura import TRAJS, TRAJ_LABELS
 
-_VID = '<video width="100%" controls style="border-radius:8px;margin-top:8px"><source src="/assets/videos/{}.mp4" type="video/mp4"></video>'
-
-VIDEO_SRCS = [_VID.format(f"traj_{i}") for i in range(4)]
-
 map_satellite = True
 map_toggle_lbl = "Mapa Normal"
 
@@ -21,7 +17,7 @@ map_fig = make_map_fig(TRAJS[0], satellite=True)
 profile_fig = make_profile_fig(TRAJS[0])
 fato_fig = make_fato_fig()
 
-video_html: str = VIDEO_SRCS[0]
+sel_traj_idx: int = 0
 
 
 def _pill_cls(idx: int) -> str:
@@ -48,9 +44,9 @@ def _select_traj(state: State, idx: int) -> None:
         return
     traj = TRAJS[idx]
     state.sel_traj_label = TRAJ_LABELS[idx]
+    state.sel_traj_idx = idx
     state.map_fig = make_map_fig(traj, satellite=state.map_satellite)
     state.profile_fig = make_profile_fig(traj)
-    state.video_html = VIDEO_SRCS[idx]
     _update_pills(state, idx)
 
 
