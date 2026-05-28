@@ -49,19 +49,19 @@
 ## Simulação 3D — Mapbox
 
 <|part|render={sel_traj_idx == 0}|
-<video width="100%" controls style="border-radius:8px;margin-top:8px"><source src="/assets/videos/traj_0.mp4" type="video/mp4"></video>
+<video width="100%" controls><source src="/assets/videos/traj_0.mp4" type="video/mp4" /></video>
 |>
 
 <|part|render={sel_traj_idx == 1}|
-<video width="100%" controls style="border-radius:8px;margin-top:8px"><source src="/assets/videos/traj_1.mp4" type="video/mp4"></video>
+<video width="100%" controls><source src="/assets/videos/traj_1.mp4" type="video/mp4" /></video>
 |>
 
 <|part|render={sel_traj_idx == 2}|
-<video width="100%" controls style="border-radius:8px;margin-top:8px"><source src="/assets/videos/traj_2.mp4" type="video/mp4"></video>
+<video width="100%" controls><source src="/assets/videos/traj_2.mp4" type="video/mp4" /></video>
 |>
 
 <|part|render={sel_traj_idx == 3}|
-<video width="100%" controls style="border-radius:8px;margin-top:8px"><source src="/assets/videos/traj_3.mp4" type="video/mp4"></video>
+<video width="100%" controls><source src="/assets/videos/traj_3.mp4" type="video/mp4" /></video>
 |>
 
 |>
