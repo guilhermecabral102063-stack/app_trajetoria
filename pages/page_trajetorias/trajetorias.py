@@ -7,7 +7,12 @@ from taipy.gui import Markdown, State
 from services.figuras import make_fato_fig, make_map_fig, make_profile_fig
 from services.leitura import TRAJS, TRAJ_LABELS
 
-_MAPBOX_BASE = "https://guilhermecabral102063-stack.github.io/mapbox-evtol-replay"
+VIDEO_SRCS = [
+    "/assets/videos/traj_0.mp4",
+    "/assets/videos/traj_1.mp4",
+    "/assets/videos/traj_2.mp4",
+    "/assets/videos/traj_3.mp4",
+]
 
 map_satellite = True
 map_toggle_lbl = "Mapa Normal"
@@ -19,11 +24,7 @@ map_fig = make_map_fig(TRAJS[0], satellite=True)
 profile_fig = make_profile_fig(TRAJS[0])
 fato_fig = make_fato_fig()
 
-mapbox_iframe: str = (
-    f'<iframe src="{_MAPBOX_BASE}/?flight=0" '
-    'width="100%" height="620px" '
-    'style="border:none;border-radius:8px" allowfullscreen></iframe>'
-)
+video_src: str = VIDEO_SRCS[0]
 
 
 def _pill_cls(idx: int) -> str:
@@ -52,11 +53,7 @@ def _select_traj(state: State, idx: int) -> None:
     state.sel_traj_label = TRAJ_LABELS[idx]
     state.map_fig = make_map_fig(traj, satellite=state.map_satellite)
     state.profile_fig = make_profile_fig(traj)
-    state.mapbox_iframe = (
-        f'<iframe src="{_MAPBOX_BASE}/?flight={idx}" '
-        'width="100%" height="620px" '
-        'style="border:none;border-radius:8px" allowfullscreen></iframe>'
-    )
+    state.video_src = VIDEO_SRCS[idx]
     _update_pills(state, idx)
 
 

@@ -48,10 +48,6 @@
 
 ## Simulação 3D — Mapbox
 
-<|part|
-
-<iframe src="https://guilhermecabral102063-stack.github.io/mapbox-evtol-replay/" width="100%" height="650px" style="border:none;border-radius:8px" allowfullscreen></iframe>
-
-|>
+<|{video_src}|video|width=100%|>
 
 |>
